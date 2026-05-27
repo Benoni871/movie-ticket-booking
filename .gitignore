@@ -1,0 +1,107 @@
+# =========================
+# Java / Maven (backend/)
+# =========================
+target/
+build/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# Maven wrapper output (keep mvnw scripts, ignore generated wrapper jar)
+.mvn/wrapper/maven-wrapper.jar
+
+# Spring Boot generated docs
+HELP.md
+.flattened-pom.xml
+
+# =========================
+# Node / Angular (frontend/)
+# =========================
+node_modules/
+dist/
+tmp/
+out-tsc/
+bazel-out/
+
+# Angular CLI cache
+.angular/
+.angular/cache/
+
+# Build caches
+.sass-cache/
+*.cache
+.eslintcache
+
+# npm / yarn / pnpm logs and metadata
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm
+.pnpm-store/
+package-lock.json.bak
+
+# =========================
+# Environment / secrets
+# =========================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# =========================
+# IDE / Editor
+# =========================
+# IntelliJ / JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/
+
+# Eclipse
+.project
+.settings/
+.classpath
+.factorypath
+.springBeans
+.metadata
+bin/
+
+# Other editors
+.history/
+.nb-gradle/
+*.swp
+*.swo
+
+# =========================
+# Operating systems
+# =========================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# =========================
+# Logs / test output
+# =========================
+*.log
+logs/
+coverage/
+*.lcov
+.nyc_output/
