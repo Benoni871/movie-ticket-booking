@@ -4,6 +4,9 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { AuthService } from '../../core/services/auth.service';
 import { BookingService } from '../../core/services/booking.service';
 import { Booking } from '../../core/models/booking.model';
+import { IconComponent } from '../../shared/icon.component';
+import { LocationService } from '../../core/services/location.service';
+import { TheaterService } from '../../core/services/theater.service';
 
 const REMINDER_WINDOW_MIN = 30;
 const POLL_MS = 30_000;             // check every 30s for time drift
@@ -13,26 +16,85 @@ const DISMISS_KEY = 'cinebook.dismissedReminders';
 @Component({
   selector: 'app-user-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, IconComponent],
   template: `
     <div class="min-h-screen bg-slate-50 flex flex-col">
       <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div class="flex items-center gap-8">
-            <a routerLink="/movies" class="flex items-center gap-2">
-              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold shadow-sm">C</span>
+            <a routerLink="/movies" class="flex items-center gap-2 group">
+              <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-fuchsia-600 text-white shadow-md group-hover:shadow-lg group-hover:scale-105 transition">
+                <app-icon name="film" [size]="18"></app-icon>
+              </span>
               <span class="text-lg font-bold text-slate-900 tracking-tight">CineBook</span>
             </a>
             <nav class="hidden sm:flex gap-1 text-sm font-medium">
               <a routerLink="/movies" routerLinkActive="text-indigo-600 bg-indigo-50"
-                 class="text-slate-600 hover:text-indigo-600 px-3 py-1.5 rounded-md transition">Movies</a>
+                 class="group inline-flex items-center gap-1.5 text-slate-600 hover:text-indigo-600 px-3 py-1.5 rounded-md transition">
+                <app-icon name="film" [size]="15" class="text-slate-400 group-hover:text-indigo-500 transition"></app-icon>
+                Movies
+              </a>
               <a routerLink="/theaters" routerLinkActive="text-indigo-600 bg-indigo-50"
-                 class="text-slate-600 hover:text-indigo-600 px-3 py-1.5 rounded-md transition">Theaters</a>
+                 class="group inline-flex items-center gap-1.5 text-slate-600 hover:text-indigo-600 px-3 py-1.5 rounded-md transition">
+                <app-icon name="building-2" [size]="15" class="text-slate-400 group-hover:text-indigo-500 transition"></app-icon>
+                Theaters
+              </a>
+              <a routerLink="/offers" routerLinkActive="text-rose-600 bg-rose-50"
+                 class="group inline-flex items-center gap-1.5 text-slate-600 hover:text-rose-600 px-3 py-1.5 rounded-md transition">
+                <app-icon name="ticket-percent" [size]="15" class="text-slate-400 group-hover:text-rose-500 group-hover:rotate-12 transition"></app-icon>
+                Offers
+              </a>
               <a routerLink="/my-bookings" routerLinkActive="text-indigo-600 bg-indigo-50"
-                 class="text-slate-600 hover:text-indigo-600 px-3 py-1.5 rounded-md transition">My Bookings</a>
+                 class="group inline-flex items-center gap-1.5 text-slate-600 hover:text-indigo-600 px-3 py-1.5 rounded-md transition">
+                <app-icon name="ticket" [size]="15" class="text-slate-400 group-hover:text-indigo-500 transition"></app-icon>
+                My Bookings
+              </a>
             </nav>
           </div>
           <div class="flex items-center gap-3">
+            <!-- Location selector -->
+            <div class="relative">
+              <button type="button"
+                      (click)="toggleLocationMenu()"
+                      class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition"
+                      [attr.aria-expanded]="locationMenuOpen()"
+                      aria-haspopup="listbox"
+                      aria-label="Choose location">
+                <app-icon name="map-pin" [size]="14" class="text-indigo-500"></app-icon>
+                <span class="max-w-[110px] truncate">{{ selectedLocation() ?? 'All locations' }}</span>
+                <app-icon name="chevron-down" [size]="12" class="text-slate-400 transition" [class.rotate-180]="locationMenuOpen()"></app-icon>
+              </button>
+              @if (locationMenuOpen()) {
+                <div class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl ring-1 ring-slate-200 overflow-hidden z-40"
+                     role="listbox">
+                  <button type="button"
+                          (click)="pickLocation(null)"
+                          class="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-slate-50 transition"
+                          [class.bg-indigo-50]="selectedLocation() === null"
+                          [class.text-indigo-700]="selectedLocation() === null">
+                    <app-icon name="sparkles" [size]="14" class="text-indigo-500"></app-icon>
+                    <span class="font-semibold">All locations</span>
+                  </button>
+                  @if (locations().length > 0) {
+                    <div class="border-t border-slate-100 max-h-72 overflow-y-auto">
+                      @for (loc of locations(); track loc) {
+                        <button type="button"
+                                (click)="pickLocation(loc)"
+                                class="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-slate-50 transition"
+                                [class.bg-indigo-50]="selectedLocation() === loc"
+                                [class.text-indigo-700]="selectedLocation() === loc">
+                          <app-icon name="map-pin" [size]="14" class="text-slate-400"></app-icon>
+                          <span class="truncate">{{ loc }}</span>
+                        </button>
+                      }
+                    </div>
+                  } @else {
+                    <div class="px-3 py-2 text-xs text-slate-400 border-t border-slate-100">No theaters have set a location yet.</div>
+                  }
+                </div>
+              }
+            </div>
+
             <div class="hidden sm:flex items-center gap-2 text-sm">
               <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
                 {{ initials() }}
@@ -42,7 +104,10 @@ const DISMISS_KEY = 'cinebook.dismissedReminders';
                 <div class="text-[10px] text-slate-500 uppercase tracking-wider">{{ auth.currentUser()?.role }}</div>
               </div>
             </div>
-            <button class="btn-secondary" (click)="logout()">Logout</button>
+            <button class="btn-secondary inline-flex items-center gap-1.5 group" (click)="logout()">
+              <app-icon name="log-out" [size]="14" class="text-slate-500 group-hover:text-slate-700 group-hover:translate-x-0.5 transition"></app-icon>
+              Logout
+            </button>
           </div>
         </div>
       </header>
@@ -52,7 +117,9 @@ const DISMISS_KEY = 'cinebook.dismissedReminders';
         <div class="sticky top-16 z-20 bg-gradient-to-r from-amber-400 to-amber-300 border-b border-amber-500 shadow-sm">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3 min-w-0">
-              <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-amber-900/10 text-amber-900 text-lg shrink-0 animate-pulse">⏰</span>
+              <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-amber-900/15 text-amber-900 shrink-0 animate-pulse">
+                <app-icon name="alarm-clock" [size]="18"></app-icon>
+              </span>
               <div class="text-sm text-amber-900 min-w-0">
                 <div class="font-bold truncate">
                   "{{ reminderBooking()!.show.movie.title }}" starts in {{ reminderMinutes() }} minute(s)
@@ -63,12 +130,15 @@ const DISMISS_KEY = 'cinebook.dismissedReminders';
               </div>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-              <a routerLink="/my-bookings" class="text-xs font-bold text-amber-900 hover:underline whitespace-nowrap">
-                View ticket →
+              <a routerLink="/my-bookings" class="group inline-flex items-center gap-1 text-xs font-bold text-amber-900 hover:underline whitespace-nowrap">
+                View ticket
+                <app-icon name="arrow-right" [size]="14" class="group-hover:translate-x-0.5 transition"></app-icon>
               </a>
               <button type="button" (click)="dismissReminder()"
-                      class="h-8 w-8 rounded-full hover:bg-amber-900/10 text-amber-900 flex items-center justify-center transition"
-                      aria-label="Dismiss">×</button>
+                      class="h-8 w-8 rounded-full hover:bg-amber-900/15 text-amber-900 flex items-center justify-center transition"
+                      aria-label="Dismiss">
+                <app-icon name="x" [size]="16"></app-icon>
+              </button>
             </div>
           </div>
         </div>
@@ -99,11 +169,17 @@ export class UserLayoutComponent implements OnInit, OnDestroy {
   auth = inject(AuthService);
   private router = inject(Router);
   private bookingService = inject(BookingService);
+  private locationService = inject(LocationService);
+  private theaterService = inject(TheaterService);
 
   year = new Date().getFullYear();
   private bookings = signal<Booking[]>([]);
   private now = signal<number>(Date.now());
   private dismissed = signal<Set<number>>(this.loadDismissed());
+
+  selectedLocation = this.locationService.current;
+  locations = signal<string[]>([]);
+  locationMenuOpen = signal(false);
 
   private tickHandle: any = null;
   private refreshHandle: any = null;
@@ -132,8 +208,25 @@ export class UserLayoutComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.fetchBookings();
+    this.fetchLocations();
     this.tickHandle = setInterval(() => this.now.set(Date.now()), POLL_MS);
     this.refreshHandle = setInterval(() => this.fetchBookings(), REFRESH_MS);
+  }
+
+  private fetchLocations() {
+    this.theaterService.getLocations().subscribe({
+      next: list => this.locations.set(list ?? []),
+      error: () => this.locations.set([])
+    });
+  }
+
+  toggleLocationMenu() {
+    this.locationMenuOpen.update(v => !v);
+  }
+
+  pickLocation(loc: string | null) {
+    this.locationService.set(loc);
+    this.locationMenuOpen.set(false);
   }
 
   ngOnDestroy() {

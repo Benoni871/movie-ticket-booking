@@ -13,6 +13,9 @@ public class ShowRequest {
 
     private BigDecimal ticketPrice;
     private Integer totalSeats;
+    private String couponCode;
+    private Integer discountPercent;
+    private String language;
 
     public Long getMovieId() { return movieId; }
     public void setMovieId(Long movieId) { this.movieId = movieId; }
@@ -22,4 +25,10 @@ public class ShowRequest {
     public void setTicketPrice(BigDecimal ticketPrice) { this.ticketPrice = ticketPrice; }
     public Integer getTotalSeats() { return totalSeats; }
     public void setTotalSeats(Integer totalSeats) { this.totalSeats = totalSeats; }
+    public String getCouponCode() { return couponCode; }
+    public void setCouponCode(String couponCode) { this.couponCode = couponCode; }
+    public Integer getDiscountPercent() { return discountPercent; }
+    public void setDiscountPercent(Integer discountPercent) { this.discountPercent = discountPercent; }
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
 }

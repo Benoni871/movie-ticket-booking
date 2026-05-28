@@ -62,6 +62,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/shows", "/api/shows/bulk").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/shows/*").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET,  "/api/bookings").hasRole("ADMIN")
+                .requestMatchers("/api/analytics/**").hasRole("ADMIN")
 
                 // Everything else under /api requires authentication
                 .requestMatchers("/api/**").authenticated()

@@ -1,10 +1,12 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, effect, inject, signal, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { TheaterService } from '../../core/services/theater.service';
 import { ShowService } from '../../core/services/show.service';
+import { LocationService } from '../../core/services/location.service';
 import { Theater } from '../../core/models/theater.model';
 import { Show } from '../../core/models/show.model';
+import { IconComponent } from '../../shared/icon.component';
 
 interface TheaterRow {
   theater: Theater;
@@ -15,11 +17,16 @@ interface TheaterRow {
 @Component({
   selector: 'app-theaters',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe],
+  imports: [CommonModule, DatePipe, IconComponent],
   template: `
     <div class="flex items-end justify-between mb-6">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900">Browse by Theater</h2>
+        <h2 class="inline-flex items-center gap-2 text-2xl font-bold text-slate-900">
+          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-sm">
+            <app-icon name="building-2" [size]="18"></app-icon>
+          </span>
+          Browse by Theater
+        </h2>
         <p class="text-sm text-slate-500 mt-1">Pick a theater to see which movies are playing there.</p>
       </div>
       <div class="text-sm text-slate-500">
@@ -39,7 +46,9 @@ interface TheaterRow {
       </div>
     } @else if (rows().length === 0) {
       <div class="card p-12 text-center">
-        <div class="text-5xl text-slate-300 mb-3">🏛</div>
+        <div class="text-slate-300 mb-3 flex justify-center">
+          <app-icon name="building-2" [size]="56"></app-icon>
+        </div>
         <div class="text-slate-700 font-semibold">No theaters listed yet</div>
         <div class="text-sm text-slate-500 mt-1">Check back soon, theater owners are signing up.</div>
       </div>
@@ -49,12 +58,19 @@ interface TheaterRow {
           <div class="card p-6 hover:shadow-md transition">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <h3 class="text-lg font-bold text-slate-900 truncate">🏛 {{ r.theater.name }}</h3>
+                <h3 class="inline-flex items-center gap-1.5 text-lg font-bold text-slate-900 truncate">
+                  <app-icon name="building-2" [size]="18" class="text-indigo-500"></app-icon>
+                  {{ r.theater.name }}
+                </h3>
                 @if (r.theater.location) {
-                  <p class="text-xs text-slate-500 mt-0.5">{{ r.theater.location }}</p>
+                  <p class="text-xs text-slate-500 mt-0.5 inline-flex items-center gap-1">
+                    <app-icon name="map-pin" [size]="12"></app-icon>
+                    {{ r.theater.location }}
+                  </p>
                 }
               </div>
               <span class="inline-flex items-center gap-1 rounded-full bg-indigo-50 text-indigo-700 px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap">
+                <app-icon name="calendar-clock" [size]="12"></app-icon>
                 {{ r.totalShows }} upcoming
               </span>
             </div>
@@ -88,8 +104,9 @@ interface TheaterRow {
             }
 
             <div class="mt-5 flex justify-end">
-              <button type="button" (click)="visit(r.theater)" class="btn-primary">
-                View movies →
+              <button type="button" (click)="visit(r.theater)" class="btn-primary group inline-flex items-center gap-1.5">
+                View movies
+                <app-icon name="arrow-right" [size]="15" class="group-hover:translate-x-0.5 transition"></app-icon>
               </button>
             </div>
           </div>
@@ -101,11 +118,23 @@ interface TheaterRow {
 export class TheatersComponent implements OnInit {
   private theaterService = inject(TheaterService);
   private showService = inject(ShowService);
+  private locationService = inject(LocationService);
   private router = inject(Router);
 
   theaters = signal<Theater[]>([]);
   showsByTheater = signal<Map<number, Show[]>>(new Map());
   loading = signal(true);
+
+  selectedLocation = this.locationService.current;
+
+  /** Re-fetch theaters when the navbar location selector changes. */
+  private locationEffect = effect(() => {
+    const loc = this.selectedLocation();
+    if (!this.initialized) return;
+    this.fetchTheaters(loc);
+  }, { allowSignalWrites: true });
+
+  private initialized = false;
 
   rows = computed<TheaterRow[]>(() => {
     const now = Date.now();
@@ -130,7 +159,14 @@ export class TheatersComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.theaterService.getAll().subscribe({
+    this.initialized = true;
+    this.fetchTheaters(this.selectedLocation());
+  }
+
+  private fetchTheaters(location: string | null) {
+    this.loading.set(true);
+    this.showsByTheater.set(new Map());
+    this.theaterService.getAll(location).subscribe({
       next: list => {
         this.theaters.set(list);
         if (list.length === 0) {

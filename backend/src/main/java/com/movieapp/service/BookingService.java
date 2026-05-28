@@ -11,6 +11,7 @@ import com.movieapp.repository.BookingRepository;
 import com.movieapp.repository.ShowRepository;
 import com.movieapp.repository.TheaterRepository;
 import com.movieapp.repository.UserRepository;
+import com.movieapp.util.LanguageMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,9 @@ import java.util.Set;
 
 @Service
 public class BookingService {
+
+    /** GST-style sales tax applied on top of (subtotal - discount). */
+    public static final BigDecimal TAX_RATE = new BigDecimal("0.04");
 
     private final BookingRepository bookingRepository;
     private final ShowRepository showRepository;
@@ -58,6 +62,26 @@ public class BookingService {
             throw new IllegalStateException("This show has already started — booking is closed");
         }
 
+        // Defensive: legacy shows may carry a language that isn't in the movie's
+        // declared list (older data, manual edits). Refuse booking those rather
+        // than letting the user buy a ticket for a language the movie can't be
+        // played in.
+        String movieLanguages = show.getMovie() != null ? show.getMovie().getLanguages() : null;
+        String showLanguage = show.getLanguage();
+        if (LanguageMatcher.hasAny(movieLanguages)) {
+            if (showLanguage == null || showLanguage.isBlank()) {
+                throw new IllegalStateException(
+                    "This show has no language set, but the movie is available in: " + movieLanguages +
+                    ". Ask the theater to re-schedule the show with one of these languages.");
+            }
+            if (!LanguageMatcher.matches(movieLanguages, showLanguage)) {
+                throw new IllegalStateException(
+                    "This show is listed in " + showLanguage +
+                    ", which is not among the movie's available languages (" + movieLanguages +
+                    "). Booking is blocked — please pick a different show.");
+            }
+        }
+
         int seatCount = req.getSeats().size();
         if (show.getAvailableSeats() < seatCount) {
             throw new IllegalStateException("Not enough seats available");
@@ -73,12 +97,35 @@ public class BookingService {
         show.setAvailableSeats(show.getAvailableSeats() - seatCount);
         showRepository.save(show);
 
+        BigDecimal subtotal = show.getTicketPrice().multiply(BigDecimal.valueOf(seatCount));
+        BigDecimal discount = BigDecimal.ZERO;
+        String appliedCoupon = null;
+
+        String requestedCode = req.getCouponCode() != null ? req.getCouponCode().trim().toUpperCase() : null;
+        if (requestedCode != null && !requestedCode.isEmpty()
+                && show.getCouponCode() != null
+                && show.getCouponCode().equalsIgnoreCase(requestedCode)
+                && show.getDiscountPercent() != null) {
+            discount = subtotal
+                    .multiply(BigDecimal.valueOf(show.getDiscountPercent()))
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            appliedCoupon = show.getCouponCode();
+        }
+
+        BigDecimal taxableBase = subtotal.subtract(discount);
+        BigDecimal tax = taxableBase.multiply(TAX_RATE).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal total = taxableBase.add(tax).setScale(2, RoundingMode.HALF_UP);
+
         Booking booking = new Booking();
         booking.setUser(user);
         booking.setShow(show);
         booking.setSeatsBooked(seatCount);
         booking.setSeats(String.join(",", req.getSeats()));
-        booking.setTotalAmount(show.getTicketPrice().multiply(BigDecimal.valueOf(seatCount)));
+        booking.setSubtotal(subtotal.setScale(2, RoundingMode.HALF_UP));
+        booking.setDiscountAmount(discount);
+        booking.setTaxAmount(tax);
+        booking.setCouponApplied(appliedCoupon);
+        booking.setTotalAmount(total);
         booking.setStatus(BookingStatus.CONFIRMED);
         return bookingRepository.save(booking);
     }

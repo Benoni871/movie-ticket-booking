@@ -16,6 +16,7 @@ export const routes: Routes = [
       { path: 'movies', loadComponent: () => import('./features/user/movie-grid.component').then(m => m.MovieGridComponent) },
       { path: 'movies/:id/book', loadComponent: () => import('./features/user/show-select.component').then(m => m.ShowSelectComponent) },
       { path: 'theaters', loadComponent: () => import('./features/user/theaters.component').then(m => m.TheatersComponent) },
+      { path: 'offers', loadComponent: () => import('./features/user/offers.component').then(m => m.OffersComponent) },
       { path: 'my-bookings', loadComponent: () => import('./features/user/my-bookings.component').then(m => m.MyBookingsComponent) }
     ]
   },
@@ -27,7 +28,8 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'movies' },
       { path: 'movies', loadComponent: () => import('./features/admin/manage-movies.component').then(m => m.ManageMoviesComponent) },
       { path: 'shows', loadComponent: () => import('./features/admin/manage-shows.component').then(m => m.ManageShowsComponent) },
-      { path: 'bookings', loadComponent: () => import('./features/admin/all-bookings.component').then(m => m.AllBookingsComponent) }
+      { path: 'bookings', loadComponent: () => import('./features/admin/all-bookings.component').then(m => m.AllBookingsComponent) },
+      { path: 'analytics', loadComponent: () => import('./features/admin/analytics.component').then(m => m.AnalyticsComponent) }
     ]
   },
   { path: '**', redirectTo: 'login' }

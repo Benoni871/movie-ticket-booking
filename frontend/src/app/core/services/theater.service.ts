@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Theater } from '../models/theater.model';
 
@@ -9,7 +9,13 @@ const API = 'http://localhost:8181/api';
 export class TheaterService {
   constructor(private http: HttpClient) {}
 
-  getAll(): Observable<Theater[]> {
-    return this.http.get<Theater[]>(`${API}/theaters`);
+  getAll(location?: string | null): Observable<Theater[]> {
+    let params = new HttpParams();
+    if (location && location.trim()) params = params.set('location', location.trim());
+    return this.http.get<Theater[]>(`${API}/theaters`, { params });
+  }
+
+  getLocations(): Observable<string[]> {
+    return this.http.get<string[]>(`${API}/theaters/locations`);
   }
 }

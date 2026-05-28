@@ -1,12 +1,14 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { MovieService } from '../../core/services/movie.service';
 import { ShowService } from '../../core/services/show.service';
 import { BookingService } from '../../core/services/booking.service';
 import { Movie } from '../../core/models/movie.model';
 import { Show } from '../../core/models/show.model';
 import { PosterCarouselComponent } from '../../shared/poster-carousel.component';
+import { IconComponent } from '../../shared/icon.component';
 
 interface DeleteShowImpact {
   show: Show;
@@ -17,7 +19,7 @@ interface DeleteShowImpact {
 @Component({
   selector: 'app-manage-shows',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, CurrencyPipe, PosterCarouselComponent],
+  imports: [CommonModule, FormsModule, RouterLink, DatePipe, CurrencyPipe, PosterCarouselComponent, IconComponent],
   template: `
     <div class="flex items-end justify-between mb-6">
       <div>
@@ -37,7 +39,9 @@ interface DeleteShowImpact {
 
     <div class="card p-6 mb-10">
       <div class="flex items-center gap-3 mb-6">
-        <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 font-bold">＋</span>
+        <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+          <app-icon name="calendar-clock" [size]="18"></app-icon>
+        </span>
         <div>
           <h3 class="font-semibold text-slate-900">Schedule Shows</h3>
           <p class="text-xs text-slate-500">Pick a movie and a date, then add one or more start times. All slots share the same price and seats.</p>
@@ -49,12 +53,12 @@ interface DeleteShowImpact {
         <div class="flex items-center justify-between mb-2">
           <label class="label mb-0">Movie <span class="text-rose-500">*</span></label>
           @if (form.movieId) {
-            <button type="button" class="text-xs text-slate-500 hover:text-slate-700" (click)="form.movieId = null">Clear</button>
+            <button type="button" class="text-xs text-slate-500 hover:text-slate-700" (click)="selectMovie(null)">Clear</button>
           }
         </div>
         <div class="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 snap-x">
           @for (m of movies(); track m.id) {
-            <button type="button" (click)="form.movieId = m.id"
+            <button type="button" (click)="selectMovie(m.id)"
                     [ngClass]="form.movieId === m.id
                       ? 'ring-2 ring-indigo-500 shadow-md'
                       : 'ring-1 ring-slate-200 hover:ring-indigo-300 hover:shadow-sm'"
@@ -97,14 +101,17 @@ interface DeleteShowImpact {
                 <input class="input" type="time" [(ngModel)]="form.times[$index]" [name]="'time' + $index" required />
                 <button type="button" (click)="removeTime($index)"
                         [disabled]="form.times.length === 1"
-                        class="h-9 w-9 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400"
-                        title="Remove time slot">×</button>
+                        class="h-9 w-9 inline-flex items-center justify-center rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+                        title="Remove time slot">
+                  <app-icon name="x" [size]="16"></app-icon>
+                </button>
               </div>
             }
           </div>
           <button type="button" (click)="addTime()"
-                  class="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition">
-            + Add another time slot
+                  class="group/btn mt-3 inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition">
+            <app-icon name="plus" [size]="12" class="group-hover/btn:rotate-90 transition"></app-icon>
+            Add another time slot
           </button>
         </div>
         <div>
@@ -121,6 +128,59 @@ interface DeleteShowImpact {
                  [(ngModel)]="form.totalSeats" required placeholder="60" />
           <p class="text-xs text-slate-400 mt-1">Seat grid uses 10 cols; multiples of 10 look cleanest.</p>
         </div>
+        <div class="md:col-span-2">
+          <label class="label">Show language <span class="text-rose-500">*</span></label>
+          @if (!form.movieId) {
+            <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-500 inline-flex items-center gap-1.5">
+              <app-icon name="info" [size]="13"></app-icon>
+              Pick a movie above and its available languages will appear here.
+            </div>
+          } @else if (selectedMovieLanguages().length === 0) {
+            <div class="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 flex items-start gap-2">
+              <app-icon name="alert-triangle" [size]="14" class="shrink-0 mt-0.5"></app-icon>
+              <div>
+                This movie has no languages declared yet, so shows can't be scheduled for it.
+                <a routerLink="/admin/movies" class="font-semibold underline hover:no-underline">Open Manage Movies</a>
+                and add at least one language first.
+              </div>
+            </div>
+          } @else {
+            <div class="flex flex-wrap gap-2">
+              @for (lang of selectedMovieLanguages(); track lang) {
+                <button type="button"
+                        (click)="form.language = lang"
+                        [ngClass]="form.language === lang
+                          ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'"
+                        class="text-xs font-semibold rounded-full border px-3 py-1 transition">
+                  {{ lang }}
+                </button>
+              }
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Pick the exact language this show will be played in.</p>
+          }
+        </div>
+
+        <div class="md:col-span-2 pt-3 border-t border-slate-100">
+          <div class="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-slate-500 mb-3">
+            <app-icon name="ticket-percent" [size]="14"></app-icon>
+            Offer (optional)
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="label">Coupon code</label>
+              <input class="input uppercase" name="couponCode" maxlength="30"
+                     [(ngModel)]="form.couponCode" placeholder="e.g. WEEKEND20" />
+              <p class="text-xs text-slate-400 mt-1">Users see this in Offers and apply it at checkout.</p>
+            </div>
+            <div>
+              <label class="label">Discount %</label>
+              <input class="input" name="discountPercent" type="number" min="1" max="100"
+                     [(ngModel)]="form.discountPercent" placeholder="20" />
+              <p class="text-xs text-slate-400 mt-1">Applied off the ticket subtotal before 4% tax.</p>
+            </div>
+          </div>
+        </div>
 
         <div class="md:col-span-2 flex items-center justify-between gap-3 pt-3 border-t border-slate-100">
           <div class="text-xs text-slate-500">
@@ -131,15 +191,21 @@ interface DeleteShowImpact {
           </div>
           <div class="flex items-center gap-3">
             @if (msg()) {
-              <span class="text-sm text-emerald-600 inline-flex items-center gap-1">
-                <span class="h-2 w-2 rounded-full bg-emerald-500"></span> {{ msg() }}
+              <span class="text-sm text-emerald-600 inline-flex items-center gap-1.5">
+                <app-icon name="check-circle-2" [size]="14"></app-icon>
+                {{ msg() }}
               </span>
             }
             @if (err()) {
-              <span class="text-sm text-rose-600">{{ err() }}</span>
+              <span class="text-sm text-rose-600 inline-flex items-center gap-1.5">
+                <app-icon name="alert-circle" [size]="14"></app-icon>
+                {{ err() }}
+              </span>
             }
             <button type="button" class="btn-secondary" (click)="reset()" [disabled]="saving()">Reset</button>
-            <button type="submit" class="btn-primary" [disabled]="saving() || !f.valid || !form.movieId">
+            <button type="submit" class="btn-primary inline-flex items-center gap-1.5"
+                    [disabled]="saving() || !f.valid || !form.movieId || !canScheduleLanguage()">
+              <app-icon name="calendar-clock" [size]="14"></app-icon>
               {{ saving() ? 'Scheduling…' : ('Schedule ' + form.times.length + ' show' + (form.times.length === 1 ? '' : 's')) }}
             </button>
           </div>
@@ -162,6 +228,7 @@ interface DeleteShowImpact {
               <th class="px-6 py-3">Show Time</th>
               <th class="px-6 py-3 text-right">Price</th>
               <th class="px-6 py-3 text-center">Seats (avail / total)</th>
+              <th class="px-6 py-3">Offer</th>
               <th class="px-6 py-3">Status</th>
               <th class="px-6 py-3 text-right">Actions</th>
             </tr>
@@ -177,6 +244,16 @@ interface DeleteShowImpact {
                   <span class="font-semibold text-slate-900">{{ s.availableSeats }}</span> / {{ s.totalSeats }}
                 </td>
                 <td class="px-6 py-3">
+                  @if (s.couponCode) {
+                    <span class="inline-flex items-center gap-1 rounded-full bg-rose-50 text-rose-700 px-2 py-0.5 text-[11px] font-bold font-mono">
+                      <app-icon name="ticket-percent" [size]="12"></app-icon>
+                      {{ s.couponCode }} · {{ s.discountPercent }}%
+                    </span>
+                  } @else {
+                    <span class="text-slate-300 text-xs">—</span>
+                  }
+                </td>
+                <td class="px-6 py-3">
                   @if (isPast(s)) {
                     <span class="inline-flex items-center rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 text-xs font-medium">Closed</span>
                   } @else if (s.availableSeats === 0) {
@@ -189,14 +266,15 @@ interface DeleteShowImpact {
                 </td>
                 <td class="px-6 py-3 text-right">
                   <button type="button"
-                          class="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-md px-3 py-1.5 transition"
+                          class="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-md px-3 py-1.5 transition"
                           (click)="openDeleteShow(s)">
+                    <app-icon name="trash-2" [size]="13"></app-icon>
                     Delete
                   </button>
                 </td>
               </tr>
             } @empty {
-              <tr><td colspan="7" class="px-6 py-10 text-center text-slate-400">No shows scheduled yet.</td></tr>
+              <tr><td colspan="8" class="px-6 py-10 text-center text-slate-400">No shows scheduled yet.</td></tr>
             }
           </tbody>
         </table>
@@ -209,7 +287,9 @@ interface DeleteShowImpact {
            (click)="closeDeleteShow()">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" (click)="$event.stopPropagation()">
           <div class="flex items-start gap-3">
-            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 text-rose-600 text-xl font-bold shrink-0">!</span>
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 text-rose-600 shrink-0">
+              <app-icon name="alert-triangle" [size]="20"></app-icon>
+            </span>
             <div>
               <h3 class="text-lg font-bold text-slate-900">Delete this show?</h3>
               <p class="text-sm text-slate-500 mt-1">
@@ -231,8 +311,9 @@ interface DeleteShowImpact {
           </div>
 
           @if (deleteTarget()!.activeBookings > 0) {
-            <div class="mt-4 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-md p-3">
-              ⚠ Can't delete — {{ deleteTarget()!.activeBookings }} confirmed booking(s) exist for this show.
+            <div class="mt-4 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-md p-3 flex items-start gap-2">
+              <app-icon name="alert-triangle" [size]="16" class="shrink-0 mt-0.5"></app-icon>
+              <span>Can't delete — {{ deleteTarget()!.activeBookings }} confirmed booking(s) exist for this show.</span>
             </div>
           }
 
@@ -245,9 +326,10 @@ interface DeleteShowImpact {
           <div class="mt-6 flex justify-end gap-3">
             <button type="button" class="btn-secondary" (click)="closeDeleteShow()" [disabled]="deleting()">Cancel</button>
             <button type="button"
-                    class="inline-flex items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition disabled:opacity-50"
+                    class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition disabled:opacity-50"
                     [disabled]="deleting() || deleteTarget()!.activeBookings > 0"
                     (click)="confirmDeleteShow()">
+              <app-icon name="trash-2" [size]="14"></app-icon>
               {{ deleting() ? 'Deleting…' : 'Yes, delete show' }}
             </button>
           </div>
@@ -279,13 +361,56 @@ export class ManageShowsComponent implements OnInit {
     times: string[];
     ticketPrice: number;
     totalSeats: number;
+    couponCode: string;
+    discountPercent: number | null;
+    language: string;
   } = {
     movieId: null,
     date: '',
     times: [''],
     ticketPrice: 0,
-    totalSeats: 0
+    totalSeats: 0,
+    couponCode: '',
+    discountPercent: null,
+    language: ''
   };
+
+  /**
+   * Languages declared on the currently selected movie, parsed from its CSV.
+   * Kept as a plain method (not a `computed`) because `form.movieId` is a
+   * direct field mutation, not a signal — a computed would never re-run.
+   * Angular's change detection calls this on every cycle, which is cheap
+   * since the list is tiny.
+   */
+  selectedMovieLanguages(): string[] {
+    const mid = this.form.movieId;
+    if (mid == null) return [];
+    const m = this.movies().find(x => x.id === mid);
+    if (!m?.languages) return [];
+    return m.languages.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  }
+
+  /** Picking a different movie must reset the picked language so a stale value can't carry over. */
+  selectMovie(id: number | null) {
+    this.form.movieId = id;
+    this.form.language = '';
+  }
+
+  /**
+   * Submit is only valid when:
+   *   - a movie is chosen,
+   *   - the movie has at least one declared language, and
+   *   - the picked language is one of those.
+   * No free-text fallback is allowed.
+   */
+  canScheduleLanguage(): boolean {
+    if (this.form.movieId == null) return false;
+    const langs = this.selectedMovieLanguages();
+    if (langs.length === 0) return false;
+    const picked = this.form.language?.trim();
+    if (!picked) return false;
+    return langs.some(l => l.toLowerCase() === picked.toLowerCase());
+  }
 
   ngOnInit() {
     this.movieService.getAll().subscribe(list => this.movies.set(list));
@@ -304,6 +429,10 @@ export class ManageShowsComponent implements OnInit {
 
   schedule() {
     if (this.form.movieId === null || !this.form.date) return;
+    if (!this.canScheduleLanguage()) {
+      this.err.set('Pick one of the movie\'s declared languages for this show.');
+      return;
+    }
     const cleanTimes = this.form.times.filter(t => t && t.length > 0);
     if (cleanTimes.length === 0) return;
 
@@ -323,7 +452,10 @@ export class ManageShowsComponent implements OnInit {
       movieId: this.form.movieId,
       showTimes,
       ticketPrice: this.form.ticketPrice,
-      totalSeats: this.form.totalSeats
+      totalSeats: this.form.totalSeats,
+      couponCode: this.form.couponCode?.trim() ? this.form.couponCode.trim().toUpperCase() : null,
+      discountPercent: this.form.discountPercent && this.form.couponCode?.trim() ? this.form.discountPercent : null,
+      language: this.form.language?.trim() ? this.form.language.trim() : null
     }).subscribe({
       next: created => {
         this.saving.set(false);
@@ -340,7 +472,7 @@ export class ManageShowsComponent implements OnInit {
   }
 
   reset() {
-    this.form = { movieId: null, date: '', times: [''], ticketPrice: 0, totalSeats: 0 };
+    this.form = { movieId: null, date: '', times: [''], ticketPrice: 0, totalSeats: 0, couponCode: '', discountPercent: null, language: '' };
   }
 
   openDeleteShow(s: Show) {

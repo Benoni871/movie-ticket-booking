@@ -6,6 +6,7 @@ import com.movieapp.entity.Show;
 import com.movieapp.repository.BookingRepository;
 import com.movieapp.repository.MovieRepository;
 import com.movieapp.repository.ShowRepository;
+import com.movieapp.util.LanguageMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,18 +31,30 @@ public class MovieService {
         this.reviewService = reviewService;
     }
 
-    public List<Movie> findAll(Long theaterId) {
+    public List<Movie> findAll(Long theaterId, String location, String language) {
         List<Movie> movies;
+        String loc = (location == null || location.isBlank()) ? null : location.trim();
         if (theaterId != null) {
             // Distinct movies that have at least one show in the given theater.
             List<Long> movieIds = showRepository.findByTheaterIdOrderByShowTimeAsc(theaterId).stream()
                     .map(s -> s.getMovie().getId())
                     .distinct()
                     .toList();
-            movies = movieRepository.findAllById(movieIds);
+            movies = movieIds.isEmpty() ? List.of() : movieRepository.findAllById(movieIds);
+        } else if (loc != null) {
+            List<Long> movieIds = showRepository.findMovieIdsByLocation(loc);
+            movies = movieIds.isEmpty() ? List.of() : movieRepository.findAllById(movieIds);
         } else {
             movies = movieRepository.findAll();
         }
+
+        String lang = (language == null || language.isBlank()) ? null : language.trim();
+        if (lang != null) {
+            movies = movies.stream()
+                    .filter(m -> LanguageMatcher.matches(m.getLanguages(), lang))
+                    .toList();
+        }
+
         applyRatings(movies);
         return movies;
     }
@@ -88,6 +101,9 @@ public class MovieService {
         }
         if (updates.getTrailerUrl() != null) {
             existing.setTrailerUrl(updates.getTrailerUrl());
+        }
+        if (updates.getLanguages() != null) {
+            existing.setLanguages(updates.getLanguages());
         }
         return movieRepository.save(existing);
     }

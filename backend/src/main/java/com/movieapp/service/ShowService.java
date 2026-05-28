@@ -13,6 +13,7 @@ import com.movieapp.repository.MovieRepository;
 import com.movieapp.repository.ShowRepository;
 import com.movieapp.repository.TheaterRepository;
 import com.movieapp.repository.UserRepository;
+import com.movieapp.util.LanguageMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,10 +46,11 @@ public class ShowService {
         return showRepository.findByMovieIdOrderByShowTimeAsc(movieId);
     }
 
-    public List<Show> search(Long movieId, Long theaterId, java.time.LocalDate date) {
+    public List<Show> search(Long movieId, Long theaterId, String location, java.time.LocalDate date) {
         LocalDateTime dayStart = date != null ? date.atStartOfDay() : null;
         LocalDateTime dayEnd = date != null ? date.plusDays(1).atStartOfDay() : null;
-        return showRepository.search(movieId, theaterId, dayStart, dayEnd);
+        String loc = (location == null || location.isBlank()) ? null : location.trim();
+        return showRepository.search(movieId, theaterId, loc, dayStart, dayEnd);
     }
 
     /** Used by admin "Manage Shows". Scoped to admin's theater. */
@@ -69,6 +71,8 @@ public class ShowService {
         Movie movie = movieRepository.findById(req.getMovieId())
                 .orElseThrow(() -> new IllegalArgumentException("Movie not found"));
 
+        String language = resolveShowLanguage(movie, req.getLanguage());
+
         Show show = new Show();
         show.setMovie(movie);
         show.setTheater(theater);
@@ -76,7 +80,49 @@ public class ShowService {
         show.setTicketPrice(req.getTicketPrice());
         show.setTotalSeats(req.getTotalSeats());
         show.setAvailableSeats(req.getTotalSeats());
+        show.setLanguage(language);
+        applyCoupon(show, req.getCouponCode(), req.getDiscountPercent());
         return showRepository.save(show);
+    }
+
+    /**
+     * Resolves and validates the language for a show against the movie's declared list.
+     * Rules:
+     *   - Movie must have at least one declared language before any show can be scheduled.
+     *   - The show's language is required and must match (case-insensitive) one of the movie's languages.
+     *   - Returns the canonical form (matching the movie's casing) so the DB stays consistent.
+     */
+    private String resolveShowLanguage(Movie movie, String requestedLanguage) {
+        if (!LanguageMatcher.hasAny(movie.getLanguages())) {
+            throw new IllegalArgumentException(
+                "Movie \"" + movie.getTitle() + "\" has no declared languages. " +
+                "Add languages on the movie before scheduling shows.");
+        }
+        String trimmed = requestedLanguage == null ? null : requestedLanguage.trim();
+        if (trimmed == null || trimmed.isEmpty()) {
+            throw new IllegalArgumentException(
+                "Show language is required and must be one of: " + movie.getLanguages());
+        }
+        for (String canonical : LanguageMatcher.parse(movie.getLanguages())) {
+            if (canonical.equalsIgnoreCase(trimmed)) return canonical;
+        }
+        throw new IllegalArgumentException(
+            "Language \"" + trimmed + "\" is not in this movie's available languages (" +
+            movie.getLanguages() + ").");
+    }
+
+    private void applyCoupon(Show show, String code, Integer percent) {
+        String trimmed = code != null ? code.trim() : null;
+        if (trimmed == null || trimmed.isEmpty() || percent == null) {
+            show.setCouponCode(null);
+            show.setDiscountPercent(null);
+            return;
+        }
+        if (percent < 1 || percent > 100) {
+            throw new IllegalArgumentException("Discount percent must be between 1 and 100");
+        }
+        show.setCouponCode(trimmed.toUpperCase());
+        show.setDiscountPercent(percent);
     }
 
     @Transactional
@@ -95,6 +141,8 @@ public class ShowService {
         Movie movie = movieRepository.findById(req.getMovieId())
                 .orElseThrow(() -> new IllegalArgumentException("Movie not found"));
 
+        String language = resolveShowLanguage(movie, req.getLanguage());
+
         List<Show> created = new ArrayList<>();
         for (LocalDateTime t : req.getShowTimes()) {
             Show show = new Show();
@@ -104,9 +152,16 @@ public class ShowService {
             show.setTicketPrice(req.getTicketPrice());
             show.setTotalSeats(req.getTotalSeats());
             show.setAvailableSeats(req.getTotalSeats());
+            show.setLanguage(language);
+            applyCoupon(show, req.getCouponCode(), req.getDiscountPercent());
             created.add(showRepository.save(show));
         }
         return created;
+    }
+
+    /** Shows in any theater that currently have a coupon attached, ordered by next showtime. */
+    public List<Show> findOffers() {
+        return showRepository.findShowsWithCoupons(LocalDateTime.now());
     }
 
     @Transactional

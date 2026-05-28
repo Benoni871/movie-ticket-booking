@@ -31,6 +31,10 @@ public class Movie {
     @Column(name = "trailer_url", length = 500)
     private String trailerUrl;
 
+    /** Comma-separated language list (e.g. "Telugu,Hindi,English"). */
+    @Column(name = "languages", length = 250)
+    private String languages;
+
     /** Populated on read; not persisted. */
     @Transient
     private Double averageRating;
@@ -52,6 +56,8 @@ public class Movie {
     public void setPrice(BigDecimal price) { this.price = price; }
     public String getTrailerUrl() { return trailerUrl; }
     public void setTrailerUrl(String trailerUrl) { this.trailerUrl = trailerUrl; }
+    public String getLanguages() { return languages; }
+    public void setLanguages(String languages) { this.languages = languages; }
     public Double getAverageRating() { return averageRating; }
     public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
     public Long getReviewCount() { return reviewCount; }

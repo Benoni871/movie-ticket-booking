@@ -14,6 +14,10 @@ export interface Booking {
   show: Show;
   seatsBooked: number;
   seats: string;
+  subtotal?: number | null;
+  discountAmount?: number | null;
+  taxAmount?: number | null;
+  couponApplied?: string | null;
   totalAmount: number;
   bookingDate: string;
   status: BookingStatus;
@@ -25,4 +29,5 @@ export interface BookingRequest {
   userId: number;
   showId: number;
   seats: string[];
+  couponCode?: string | null;
 }

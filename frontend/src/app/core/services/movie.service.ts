@@ -9,9 +9,11 @@ const API = 'http://localhost:8181/api';
 export class MovieService {
   constructor(private http: HttpClient) {}
 
-  getAll(opts?: { theaterId?: number }): Observable<Movie[]> {
+  getAll(opts?: { theaterId?: number; location?: string | null; language?: string | null }): Observable<Movie[]> {
     let params = new HttpParams();
     if (opts?.theaterId != null) params = params.set('theaterId', opts.theaterId);
+    if (opts?.location && opts.location.trim()) params = params.set('location', opts.location.trim());
+    if (opts?.language && opts.language.trim()) params = params.set('language', opts.language.trim());
     return this.http.get<Movie[]>(`${API}/movies`, { params });
   }
 

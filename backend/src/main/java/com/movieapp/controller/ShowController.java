@@ -30,11 +30,13 @@ public class ShowController {
     public ResponseEntity<List<Show>> getShows(
             @RequestParam(required = false) Long movieId,
             @RequestParam(required = false) Long theaterId,
+            @RequestParam(required = false) String location,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        if (movieId == null && theaterId == null && date == null) {
-            throw new IllegalArgumentException("At least one filter (movieId, theaterId, or date) is required");
+        boolean hasLocation = location != null && !location.isBlank();
+        if (movieId == null && theaterId == null && !hasLocation && date == null) {
+            throw new IllegalArgumentException("At least one filter (movieId, theaterId, location, or date) is required");
         }
-        return ResponseEntity.ok(showService.search(movieId, theaterId, date));
+        return ResponseEntity.ok(showService.search(movieId, theaterId, location, date));
     }
 
     @PostMapping
@@ -52,6 +54,11 @@ public class ShowController {
     @GetMapping("/all")
     public ResponseEntity<List<Show>> getAll(@AuthenticationPrincipal UserPrincipal me) {
         return ResponseEntity.ok(showService.findForAdmin(me != null ? me.getId() : null));
+    }
+
+    @GetMapping("/offers")
+    public ResponseEntity<List<Show>> offers() {
+        return ResponseEntity.ok(showService.findOffers());
     }
 
     @GetMapping("/{showId}/booked-seats")

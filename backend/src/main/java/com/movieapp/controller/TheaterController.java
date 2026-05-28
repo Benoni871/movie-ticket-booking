@@ -18,7 +18,15 @@ public class TheaterController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Theater>> all() {
+    public ResponseEntity<List<Theater>> all(@RequestParam(required = false) String location) {
+        if (location != null && !location.isBlank()) {
+            return ResponseEntity.ok(theaterRepository.findByLocationIgnoreCaseOrderByNameAsc(location.trim()));
+        }
         return ResponseEntity.ok(theaterRepository.findAll());
+    }
+
+    @GetMapping("/locations")
+    public ResponseEntity<List<String>> locations() {
+        return ResponseEntity.ok(theaterRepository.findDistinctLocations());
     }
 }

@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ReviewService } from '../../core/services/review.service';
 import { Booking } from '../../core/models/booking.model';
 import { bookingRef, estimateRefund, timeUntil, RefundEstimate } from '../../shared/booking-utils';
+import { IconComponent } from '../../shared/icon.component';
 
 type Tab = 'upcoming' | 'past' | 'cancelled';
 
@@ -14,7 +15,7 @@ const SOON_WINDOW_MIN = 30;
 @Component({
   selector: 'app-my-bookings',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, CurrencyPipe],
+  imports: [CommonModule, RouterLink, DatePipe, CurrencyPipe, IconComponent],
   template: `
     <div class="flex items-end justify-between mb-6">
       <div>
@@ -52,11 +53,16 @@ const SOON_WINDOW_MIN = 30;
       </div>
     } @else if (visible().length === 0) {
       <div class="card p-12 text-center">
-        <div class="text-5xl text-slate-300 mb-3">🎟</div>
+        <div class="text-slate-300 mb-3 flex justify-center">
+          <app-icon name="ticket" [size]="56"></app-icon>
+        </div>
         <div class="text-slate-700 font-semibold">{{ emptyTitle() }}</div>
         <div class="text-sm text-slate-500 mt-1">{{ emptySubtitle() }}</div>
         @if (tab() === 'upcoming') {
-          <a routerLink="/movies" class="btn-primary mt-4 inline-flex">Browse movies</a>
+          <a routerLink="/movies" class="btn-primary mt-4 inline-flex items-center gap-1.5 group">
+            <app-icon name="film" [size]="16" class="group-hover:scale-110 transition"></app-icon>
+            Browse movies
+          </a>
         }
       </div>
     } @else {
@@ -86,7 +92,8 @@ const SOON_WINDOW_MIN = 30;
                       </span>
                       @if (isStartingSoon(b)) {
                         <span class="inline-flex items-center gap-1 rounded-full bg-amber-400 text-amber-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm animate-pulse">
-                          ⏰ Starting soon
+                          <app-icon name="alarm-clock" [size]="11"></app-icon>
+                          Starting soon
                         </span>
                       }
                     </div>
@@ -97,8 +104,9 @@ const SOON_WINDOW_MIN = 30;
                     <dd class="text-slate-900 font-medium">{{ b.show.showTime | date:'EEE, MMM d · h:mm a' }}</dd>
                     @if (b.show.theater) {
                       <dt class="text-slate-500">Theater</dt>
-                      <dd class="text-slate-900 font-medium">
-                        🏛 {{ b.show.theater.name }}
+                      <dd class="text-slate-900 font-medium inline-flex items-center gap-1.5">
+                        <app-icon name="building-2" [size]="14" class="text-slate-500"></app-icon>
+                        {{ b.show.theater.name }}
                         @if (b.show.theater.location) {
                           <span class="text-xs text-slate-500 ml-1">{{ b.show.theater.location }}</span>
                         }
@@ -121,7 +129,8 @@ const SOON_WINDOW_MIN = 30;
 
                   @if (b.status === 'CONFIRMED' && !isShowPast(b)) {
                     <div class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                      ⏱ {{ untilLabel(b) }}
+                      <app-icon name="clock" [size]="12"></app-icon>
+                      {{ untilLabel(b) }}
                     </div>
                   }
                 </div>
@@ -146,30 +155,37 @@ const SOON_WINDOW_MIN = 30;
                 <div class="flex flex-col gap-2">
                   @if (b.status === 'CONFIRMED') {
                     <button type="button"
-                            class="inline-flex items-center justify-center rounded-md bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2 transition"
+                            class="group/btn inline-flex items-center justify-center gap-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2 transition"
                             (click)="openTicket(b)">
-                      🎫 Show Ticket
+                      <app-icon name="ticket" [size]="14" class="group-hover/btn:rotate-6 transition"></app-icon>
+                      Show Ticket
                     </button>
                   }
                   @if (canCancel(b)) {
-                    <button type="button" class="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-md py-2 transition"
+                    <button type="button" class="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-md py-2 transition"
                             (click)="openCancel(b)">
+                      <app-icon name="circle-x" [size]="13"></app-icon>
                       Cancel booking
                     </button>
                   } @else if (b.status === 'CONFIRMED' && !isShowPast(b)) {
-                    <span class="text-[10px] text-slate-400 text-center">Cancellation closed (under 2h)</span>
+                    <span class="inline-flex items-center justify-center gap-1 text-[10px] text-slate-400 text-center">
+                      <app-icon name="lock" [size]="10"></app-icon>
+                      Cancellation closed (under 2h)
+                    </span>
                   }
 
                   @if (isShowOver(b) && b.status === 'CONFIRMED') {
                     @if (myRating(b.id); as r) {
-                      <div class="text-center text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md py-2">
-                        ✓ Rated {{ r }} ★
+                      <div class="inline-flex items-center justify-center gap-1 text-center text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-md py-2">
+                        <app-icon name="check-circle-2" [size]="13"></app-icon>
+                        Rated {{ r }} 🍅
                       </div>
                     } @else if (canReview(b.id)) {
                       <button type="button"
-                              class="inline-flex items-center justify-center rounded-md bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold py-2 transition"
+                              class="group/btn inline-flex items-center justify-center gap-1.5 rounded-md bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold py-2 transition"
                               (click)="openReview(b)">
-                        ★ Rate this movie
+                        <span class="text-base leading-none group-hover/btn:scale-125 transition-transform">🍅</span>
+                        Rate this movie
                       </button>
                     }
                   }
@@ -234,7 +250,7 @@ const SOON_WINDOW_MIN = 30;
            (click)="closeReview()">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" (click)="$event.stopPropagation()">
           <div class="flex items-start gap-3">
-            <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600 text-xl font-bold shrink-0">★</span>
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-rose-100 text-xl shrink-0">🍅</span>
             <div>
               <h3 class="text-lg font-bold text-slate-900">Rate "{{ reviewTarget()!.show.movie.title }}"</h3>
               <p class="text-sm text-slate-500 mt-0.5">
@@ -248,10 +264,12 @@ const SOON_WINDOW_MIN = 30;
             @for (n of [1,2,3,4,5]; track n) {
               <button type="button" (click)="setStar(n)" (mouseenter)="hoverStar(n)"
                       class="text-4xl transition transform hover:scale-110"
-                      [class.text-amber-400]="n <= (reviewHover() || reviewRating())"
-                      [class.text-slate-300]="n > (reviewHover() || reviewRating())"
-                      [attr.aria-label]="'Rate ' + n + ' star'">
-                ★
+                      [class.grayscale-0]="n <= (reviewHover() || reviewRating())"
+                      [class.grayscale]="n > (reviewHover() || reviewRating())"
+                      [class.opacity-100]="n <= (reviewHover() || reviewRating())"
+                      [class.opacity-40]="n > (reviewHover() || reviewRating())"
+                      [attr.aria-label]="'Rate ' + n + ' tomato'">
+                🍅
               </button>
             }
           </div>
@@ -259,7 +277,7 @@ const SOON_WINDOW_MIN = 30;
             @if (reviewRating() > 0) {
               You picked {{ reviewRating() }} / 5
             } @else {
-              Tap a star to rate
+              Tap a tomato to rate
             }
           </div>
 
@@ -289,8 +307,10 @@ const SOON_WINDOW_MIN = 30;
 
           <!-- Close button -->
           <button type="button" (click)="closeTicket()"
-                  class="absolute -top-3 -right-3 z-10 h-10 w-10 rounded-full bg-white text-slate-700 shadow-lg hover:bg-slate-100 flex items-center justify-center text-xl transition"
-                  aria-label="Close ticket">×</button>
+                  class="absolute -top-3 -right-3 z-10 h-10 w-10 rounded-full bg-white text-slate-700 shadow-lg hover:bg-slate-100 hover:rotate-90 flex items-center justify-center transition"
+                  aria-label="Close ticket">
+            <app-icon name="x" [size]="20"></app-icon>
+          </button>
 
           <!-- Ticket body -->
           <div class="relative bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
@@ -396,11 +416,13 @@ const SOON_WINDOW_MIN = 30;
           <!-- Action row -->
           <div class="mt-4 flex items-center justify-end gap-3">
             <button type="button" (click)="printTicket()"
-                    class="inline-flex items-center gap-2 rounded-lg bg-white/90 hover:bg-white text-slate-900 px-4 py-2 text-sm font-semibold shadow transition">
-              🖨 Print
+                    class="group/btn inline-flex items-center gap-2 rounded-lg bg-white/90 hover:bg-white text-slate-900 px-4 py-2 text-sm font-semibold shadow transition">
+              <app-icon name="printer" [size]="16" class="group-hover/btn:translate-y-px transition"></app-icon>
+              Print
             </button>
             <button type="button" (click)="closeTicket()"
                     class="inline-flex items-center gap-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 text-sm font-semibold shadow transition">
+              <app-icon name="check" [size]="16"></app-icon>
               Done
             </button>
           </div>

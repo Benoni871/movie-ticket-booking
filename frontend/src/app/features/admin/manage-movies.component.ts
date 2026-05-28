@@ -8,6 +8,7 @@ import { Movie } from '../../core/models/movie.model';
 import { Show } from '../../core/models/show.model';
 import { Booking } from '../../core/models/booking.model';
 import { PosterCarouselComponent } from '../../shared/poster-carousel.component';
+import { IconComponent } from '../../shared/icon.component';
 import { toYouTubeEmbedUrl } from '../../shared/youtube-utils';
 
 interface DeleteImpact {
@@ -21,7 +22,7 @@ interface DeleteImpact {
 @Component({
   selector: 'app-manage-movies',
   standalone: true,
-  imports: [CommonModule, FormsModule, PosterCarouselComponent],
+  imports: [CommonModule, FormsModule, PosterCarouselComponent, IconComponent],
   template: `
     <div class="flex items-end justify-between mb-6">
       <div>
@@ -43,7 +44,9 @@ interface DeleteImpact {
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
       <div class="lg:col-span-2 card p-6">
         <div class="flex items-center gap-3 mb-5">
-          <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 font-bold">+</span>
+          <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+            <app-icon name="plus" [size]="18"></app-icon>
+          </span>
           <div>
             <h3 class="font-semibold text-slate-900">Add a Movie</h3>
             <p class="text-xs text-slate-500">Once added, it will appear in the user catalog instantly.</p>
@@ -88,21 +91,42 @@ interface DeleteImpact {
               }
             </p>
           </div>
+          <div class="md:col-span-2">
+            <label class="label">Available languages</label>
+            <div class="flex flex-wrap gap-2 mb-2">
+              @for (lang of suggestedLanguages; track lang) {
+                <button type="button"
+                        (click)="toggleAddLanguage(lang)"
+                        [ngClass]="hasLanguage(form.languages, lang)
+                          ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'"
+                        class="text-xs font-semibold rounded-full border px-3 py-1 transition">
+                  {{ lang }}
+                </button>
+              }
+            </div>
+            <input class="input" name="languages" [(ngModel)]="form.languages"
+                   placeholder="Comma-separated, e.g. Telugu, Hindi, English" />
+            <p class="text-xs text-slate-400 mt-1">Tap a chip above or type your own list — separated by commas.</p>
+          </div>
 
           <div class="md:col-span-2 flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
             @if (msg()) {
-              <span class="text-sm text-emerald-600 inline-flex items-center gap-1">
-                <span class="h-2 w-2 rounded-full bg-emerald-500"></span> {{ msg() }}
+              <span class="text-sm text-emerald-600 inline-flex items-center gap-1.5">
+                <app-icon name="check-circle-2" [size]="14"></app-icon>
+                {{ msg() }}
               </span>
             }
             @if (err()) {
-              <span class="text-sm text-rose-600 inline-flex items-center gap-1">
-                <span class="h-2 w-2 rounded-full bg-rose-500"></span> {{ err() }}
+              <span class="text-sm text-rose-600 inline-flex items-center gap-1.5">
+                <app-icon name="alert-circle" [size]="14"></app-icon>
+                {{ err() }}
               </span>
             }
             <button type="button" class="btn-secondary" (click)="reset()" [disabled]="saving()">Reset</button>
-            <button type="submit" class="btn-primary" [disabled]="saving() || !f.valid">
-              {{ saving() ? 'Adding…' : '+ Add Movie' }}
+            <button type="submit" class="btn-primary group inline-flex items-center gap-1.5" [disabled]="saving() || !f.valid">
+              <app-icon name="plus" [size]="14" class="group-hover:rotate-90 transition"></app-icon>
+              {{ saving() ? 'Adding…' : 'Add Movie' }}
             </button>
           </div>
         </form>
@@ -128,7 +152,8 @@ interface DeleteImpact {
           }
           @if (embedPreview(form.trailerUrl)) {
             <div class="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-rose-600 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded">
-              ▶ Trailer attached
+              <app-icon name="play-circle" [size]="11"></app-icon>
+              Trailer attached
             </div>
           }
         </div>
@@ -181,13 +206,15 @@ interface DeleteImpact {
                 </td>
                 <td class="px-6 py-3 text-right whitespace-nowrap">
                   <button type="button"
-                          class="text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border border-indigo-200 rounded-md px-3 py-1.5 transition mr-2"
+                          class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border border-indigo-200 rounded-md px-3 py-1.5 transition mr-2"
                           (click)="openEdit(m)">
+                    <app-icon name="edit" [size]="13"></app-icon>
                     Edit
                   </button>
                   <button type="button"
-                          class="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-md px-3 py-1.5 transition"
+                          class="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-md px-3 py-1.5 transition"
                           (click)="openDelete(m)">
+                    <app-icon name="trash-2" [size]="13"></app-icon>
                     Delete
                   </button>
                 </td>
@@ -206,7 +233,9 @@ interface DeleteImpact {
            (click)="closeEdit()">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6" (click)="$event.stopPropagation()">
           <div class="flex items-start gap-3">
-            <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 text-xl font-bold shrink-0">✎</span>
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 shrink-0">
+              <app-icon name="edit" [size]="18"></app-icon>
+            </span>
             <div>
               <h3 class="text-lg font-bold text-slate-900">Edit movie</h3>
               <p class="text-sm text-slate-500 mt-0.5">Update the title, genre, runtime, or replace the poster.</p>
@@ -255,6 +284,23 @@ interface DeleteImpact {
                   }
                 </p>
               </div>
+              <div>
+                <label class="label">Available languages</label>
+                <div class="flex flex-wrap gap-2 mb-2">
+                  @for (lang of suggestedLanguages; track lang) {
+                    <button type="button"
+                            (click)="toggleEditLanguage(lang)"
+                            [ngClass]="hasLanguage(editForm.languages, lang)
+                              ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                              : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'"
+                            class="text-xs font-semibold rounded-full border px-3 py-1 transition">
+                      {{ lang }}
+                    </button>
+                  }
+                </div>
+                <input class="input" name="eLanguages" [(ngModel)]="editForm.languages"
+                       placeholder="Comma-separated, e.g. Telugu, Hindi, English" />
+              </div>
             </form>
 
             <div>
@@ -284,9 +330,10 @@ interface DeleteImpact {
 
           <div class="mt-6 flex justify-end gap-3">
             <button type="button" class="btn-secondary" (click)="closeEdit()" [disabled]="editing()">Cancel</button>
-            <button type="button" class="btn-primary"
+            <button type="button" class="btn-primary inline-flex items-center gap-1.5"
                     [disabled]="editing() || !editForm.title || !editForm.title.trim()"
                     (click)="confirmEdit()">
+              <app-icon name="save" [size]="14"></app-icon>
               {{ editing() ? 'Saving…' : 'Save changes' }}
             </button>
           </div>
@@ -300,7 +347,9 @@ interface DeleteImpact {
            (click)="closeDelete()">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" (click)="$event.stopPropagation()">
           <div class="flex items-start gap-3">
-            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 text-rose-600 text-xl font-bold shrink-0">!</span>
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 text-rose-600 shrink-0">
+              <app-icon name="alert-triangle" [size]="20"></app-icon>
+            </span>
             <div>
               <h3 class="text-lg font-bold text-slate-900">Delete "{{ deleteTarget()!.movie.title }}"?</h3>
               <p class="text-sm text-slate-500 mt-1">
@@ -330,9 +379,12 @@ interface DeleteImpact {
           </div>
 
           @if (deleteTarget()!.activeBookings > 0) {
-            <div class="mt-4 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-md p-3">
-              ⚠ Can't delete this movie — it has {{ deleteTarget()!.activeBookings }} confirmed booking(s).
-              Users would lose their tickets. Wait until shows pass, or cancel those bookings first.
+            <div class="mt-4 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-md p-3 flex items-start gap-2">
+              <app-icon name="alert-triangle" [size]="16" class="shrink-0 mt-0.5"></app-icon>
+              <span>
+                Can't delete this movie — it has {{ deleteTarget()!.activeBookings }} confirmed booking(s).
+                Users would lose their tickets. Wait until shows pass, or cancel those bookings first.
+              </span>
             </div>
           } @else {
             <p class="mt-4 text-xs text-slate-500">
@@ -350,9 +402,10 @@ interface DeleteImpact {
           <div class="mt-6 flex justify-end gap-3">
             <button type="button" class="btn-secondary" (click)="closeDelete()" [disabled]="deleting()">Cancel</button>
             <button type="button"
-                    class="inline-flex items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition disabled:opacity-50"
+                    class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition disabled:opacity-50"
                     [disabled]="deleting() || deleteTarget()!.activeBookings > 0"
                     (click)="confirmDelete()">
+              <app-icon name="trash-2" [size]="14"></app-icon>
               {{ deleting() ? 'Deleting…' : 'Yes, delete movie' }}
             </button>
           </div>
@@ -381,12 +434,39 @@ export class ManageMoviesComponent implements OnInit {
   editTarget = signal<Movie | null>(null);
   editing = signal(false);
   editError = signal<string | null>(null);
-  editForm: Omit<Movie, 'id'> = { title: '', genre: '', durationMins: 0, posterUrl: '', price: null, trailerUrl: '' };
+  editForm: Omit<Movie, 'id'> = { title: '', genre: '', durationMins: 0, posterUrl: '', price: null, trailerUrl: '', languages: '' };
 
-  form: Omit<Movie, 'id'> = { title: '', genre: '', durationMins: 0, posterUrl: '', price: null, trailerUrl: '' };
+  form: Omit<Movie, 'id'> = { title: '', genre: '', durationMins: 0, posterUrl: '', price: null, trailerUrl: '', languages: '' };
+
+  readonly suggestedLanguages = ['Telugu', 'Hindi', 'English', 'Tamil', 'Kannada', 'Malayalam'];
 
   embedPreview(url: string | null | undefined): string | null {
     return toYouTubeEmbedUrl(url);
+  }
+
+  hasLanguage(csv: string | null | undefined, lang: string): boolean {
+    return this.parseLanguages(csv).some(l => l.toLowerCase() === lang.toLowerCase());
+  }
+
+  toggleAddLanguage(lang: string) {
+    this.form.languages = this.toggleLanguage(this.form.languages, lang);
+  }
+
+  toggleEditLanguage(lang: string) {
+    this.editForm.languages = this.toggleLanguage(this.editForm.languages, lang);
+  }
+
+  private toggleLanguage(csv: string | null | undefined, lang: string): string {
+    const list = this.parseLanguages(csv);
+    const idx = list.findIndex(l => l.toLowerCase() === lang.toLowerCase());
+    if (idx >= 0) list.splice(idx, 1);
+    else list.push(lang);
+    return list.join(', ');
+  }
+
+  private parseLanguages(csv: string | null | undefined): string[] {
+    if (!csv) return [];
+    return csv.split(',').map(s => s.trim()).filter(s => s.length > 0);
   }
 
   ngOnInit() { this.loadAll(); }
@@ -422,7 +502,7 @@ export class ManageMoviesComponent implements OnInit {
   }
 
   reset() {
-    this.form = { title: '', genre: '', durationMins: 0, posterUrl: '', price: null, trailerUrl: '' };
+    this.form = { title: '', genre: '', durationMins: 0, posterUrl: '', price: null, trailerUrl: '', languages: '' };
   }
 
   openEdit(m: Movie) {
@@ -433,7 +513,8 @@ export class ManageMoviesComponent implements OnInit {
       durationMins: m.durationMins ?? 0,
       posterUrl: m.posterUrl ?? '',
       price: m.price ?? null,
-      trailerUrl: m.trailerUrl ?? ''
+      trailerUrl: m.trailerUrl ?? '',
+      languages: m.languages ?? ''
     };
     this.editError.set(null);
   }

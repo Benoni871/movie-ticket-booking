@@ -6,6 +6,7 @@ public class BookingRequest {
     private Long userId;
     private Long showId;
     private List<String> seats;
+    private String couponCode;
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
@@ -13,4 +14,6 @@ public class BookingRequest {
     public void setShowId(Long showId) { this.showId = showId; }
     public List<String> getSeats() { return seats; }
     public void setSeats(List<String> seats) { this.seats = seats; }
+    public String getCouponCode() { return couponCode; }
+    public void setCouponCode(String couponCode) { this.couponCode = couponCode; }
 }

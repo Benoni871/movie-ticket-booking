@@ -35,6 +35,15 @@ public class Show {
     @Column(name = "available_seats", nullable = false)
     private Integer availableSeats;
 
+    @Column(name = "coupon_code", length = 30)
+    private String couponCode;
+
+    @Column(name = "discount_percent")
+    private Integer discountPercent;
+
+    @Column(name = "language", length = 40)
+    private String language;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Movie getMovie() { return movie; }
@@ -49,4 +58,10 @@ public class Show {
     public void setTotalSeats(Integer totalSeats) { this.totalSeats = totalSeats; }
     public Integer getAvailableSeats() { return availableSeats; }
     public void setAvailableSeats(Integer availableSeats) { this.availableSeats = availableSeats; }
+    public String getCouponCode() { return couponCode; }
+    public void setCouponCode(String couponCode) { this.couponCode = couponCode; }
+    public Integer getDiscountPercent() { return discountPercent; }
+    public void setDiscountPercent(Integer discountPercent) { this.discountPercent = discountPercent; }
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
 }

@@ -9,6 +9,9 @@ export interface Show {
   ticketPrice: number;
   totalSeats: number;
   availableSeats: number;
+  couponCode?: string | null;
+  discountPercent?: number | null;
+  language?: string | null;
 }
 
 export interface ShowRequest {
@@ -16,6 +19,9 @@ export interface ShowRequest {
   showTime: string;
   ticketPrice: number;
   totalSeats: number;
+  couponCode?: string | null;
+  discountPercent?: number | null;
+  language?: string | null;
 }
 
 export interface BulkShowRequest {
@@ -23,4 +29,7 @@ export interface BulkShowRequest {
   showTimes: string[];
   ticketPrice: number;
   totalSeats: number;
+  couponCode?: string | null;
+  discountPercent?: number | null;
+  language?: string | null;
 }

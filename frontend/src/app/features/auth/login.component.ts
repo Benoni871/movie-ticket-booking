@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { Role } from '../../core/models/user.model';
+import { IconComponent } from '../../shared/icon.component';
 
 type Mode = 'signin' | 'signup-user' | 'signup-admin';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IconComponent],
   template: `
     <div class="min-h-screen flex bg-slate-50">
       <!-- Marketing side -->
@@ -19,7 +20,9 @@ type Mode = 'signin' | 'signup-user' | 'signup-admin';
         <div class="absolute -bottom-32 -left-24 w-96 h-96 rounded-full bg-pink-500/20 blur-3xl"></div>
 
         <div class="relative flex items-center gap-2">
-          <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-white/15 backdrop-blur font-bold">C</span>
+          <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur shadow">
+            <app-icon name="film" [size]="20"></app-icon>
+          </span>
           <span class="text-xl font-bold tracking-tight">CineBook</span>
         </div>
 
@@ -32,9 +35,18 @@ type Mode = 'signin' | 'signup-user' | 'signup-admin';
             Moviegoers reserve seats in seconds. Theater owners get their own admin console to manage movies, schedule shows, and track every booking.
           </p>
           <ul class="space-y-2 text-sm text-indigo-100 pt-2">
-            <li class="flex items-center gap-2">✓ Interactive seat picker</li>
-            <li class="flex items-center gap-2">✓ Transparent cancellation refunds</li>
-            <li class="flex items-center gap-2">✓ Multi-theater management</li>
+            <li class="flex items-center gap-2">
+              <app-icon name="armchair" [size]="14" class="text-amber-300"></app-icon>
+              Interactive seat picker
+            </li>
+            <li class="flex items-center gap-2">
+              <app-icon name="shield-check" [size]="14" class="text-amber-300"></app-icon>
+              Transparent cancellation refunds
+            </li>
+            <li class="flex items-center gap-2">
+              <app-icon name="building-2" [size]="14" class="text-amber-300"></app-icon>
+              Multi-theater management
+            </li>
           </ul>
         </div>
 
@@ -45,7 +57,9 @@ type Mode = 'signin' | 'signup-user' | 'signup-admin';
       <div class="flex flex-1 items-center justify-center px-6 py-12">
         <div class="w-full max-w-md">
           <div class="lg:hidden flex items-center gap-2 mb-8 justify-center">
-            <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold shadow">C</span>
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-fuchsia-600 text-white shadow">
+              <app-icon name="film" [size]="20"></app-icon>
+            </span>
             <span class="text-xl font-bold text-slate-900">CineBook</span>
           </div>
 
@@ -82,7 +96,10 @@ type Mode = 'signin' | 'signup-user' | 'signup-admin';
               </div>
 
               @if (error()) {
-                <div class="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-md p-3">{{ error() }}</div>
+                <div class="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-md p-3 flex items-start gap-2">
+                  <app-icon name="alert-circle" [size]="16" class="shrink-0 mt-0.5"></app-icon>
+                  <span>{{ error() }}</span>
+                </div>
               }
 
               <button type="submit" class="btn-primary w-full" [disabled]="loading() || !f.valid">
@@ -99,18 +116,22 @@ type Mode = 'signin' | 'signup-user' | 'signup-admin';
                       [ngClass]="mode() === 'signup-user'
                         ? 'ring-2 ring-indigo-500 bg-indigo-50'
                         : 'ring-1 ring-slate-200 hover:ring-indigo-300'"
-                      class="rounded-lg p-3 text-left transition">
-                <div class="text-2xl">🎬</div>
-                <div class="font-semibold text-sm text-slate-900 mt-1">Moviegoer</div>
+                      class="rounded-lg p-3 text-left transition group">
+                <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 group-hover:scale-110 transition">
+                  <app-icon name="ticket" [size]="18"></app-icon>
+                </span>
+                <div class="font-semibold text-sm text-slate-900 mt-2">Moviegoer</div>
                 <div class="text-[10px] text-slate-500">Book tickets at any theater</div>
               </button>
               <button type="button" (click)="setMode('signup-admin')"
                       [ngClass]="mode() === 'signup-admin'
                         ? 'ring-2 ring-indigo-500 bg-indigo-50'
                         : 'ring-1 ring-slate-200 hover:ring-indigo-300'"
-                      class="rounded-lg p-3 text-left transition">
-                <div class="text-2xl">🏛</div>
-                <div class="font-semibold text-sm text-slate-900 mt-1">Theater Owner</div>
+                      class="rounded-lg p-3 text-left transition group">
+                <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-purple-100 text-purple-600 group-hover:scale-110 transition">
+                  <app-icon name="building-2" [size]="18"></app-icon>
+                </span>
+                <div class="font-semibold text-sm text-slate-900 mt-2">Theater Owner</div>
                 <div class="text-[10px] text-slate-500">Run your own cinema admin</div>
               </button>
             </div>
@@ -142,7 +163,10 @@ type Mode = 'signin' | 'signup-user' | 'signup-admin';
               }
 
               @if (error()) {
-                <div class="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-md p-3">{{ error() }}</div>
+                <div class="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-md p-3 flex items-start gap-2">
+                  <app-icon name="alert-circle" [size]="16" class="shrink-0 mt-0.5"></app-icon>
+                  <span>{{ error() }}</span>
+                </div>
               }
 
               <button type="submit" class="btn-primary w-full" [disabled]="loading() || !g.valid || !canSubmitSignup()">

@@ -25,6 +25,18 @@ public class Booking {
     @Column(name = "seats_booked", nullable = false)
     private Integer seatsBooked;
 
+    @Column(name = "subtotal", precision = 10, scale = 2)
+    private BigDecimal subtotal;
+
+    @Column(name = "discount_amount", precision = 10, scale = 2)
+    private BigDecimal discountAmount;
+
+    @Column(name = "tax_amount", precision = 10, scale = 2)
+    private BigDecimal taxAmount;
+
+    @Column(name = "coupon_applied", length = 30)
+    private String couponApplied;
+
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
@@ -64,6 +76,14 @@ public class Booking {
     public void setSeatsBooked(Integer seatsBooked) { this.seatsBooked = seatsBooked; }
     public BigDecimal getTotalAmount() { return totalAmount; }
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+    public BigDecimal getSubtotal() { return subtotal; }
+    public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
+    public BigDecimal getDiscountAmount() { return discountAmount; }
+    public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
+    public BigDecimal getTaxAmount() { return taxAmount; }
+    public void setTaxAmount(BigDecimal taxAmount) { this.taxAmount = taxAmount; }
+    public String getCouponApplied() { return couponApplied; }
+    public void setCouponApplied(String couponApplied) { this.couponApplied = couponApplied; }
     public String getSeats() { return seats; }
     public void setSeats(String seats) { this.seats = seats; }
     public LocalDateTime getBookingDate() { return bookingDate; }

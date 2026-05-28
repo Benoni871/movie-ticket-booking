@@ -18,8 +18,10 @@ public class MovieController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Movie>> getAll(@RequestParam(required = false) Long theaterId) {
-        return ResponseEntity.ok(movieService.findAll(theaterId));
+    public ResponseEntity<List<Movie>> getAll(@RequestParam(required = false) Long theaterId,
+                                              @RequestParam(required = false) String location,
+                                              @RequestParam(required = false) String language) {
+        return ResponseEntity.ok(movieService.findAll(theaterId, location, language));
     }
 
     @PostMapping
