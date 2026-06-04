@@ -14,53 +14,53 @@ type Filter = 'all' | 'confirmed' | 'cancelled';
   standalone: true,
   imports: [CommonModule, DatePipe, CurrencyPipe, PosterCarouselComponent],
   template: `
-    <div class="flex items-end justify-between mb-6">
-      <div>
-        <h2 class="text-2xl font-bold text-slate-900">All Bookings</h2>
-        <p class="text-sm text-slate-500 mt-1">Every reservation made across the platform.</p>
+    <div id="allBookings__div__header" class="flex items-end justify-between mb-6">
+      <div id="allBookings__div__headerText">
+        <h2 id="allBookings__h2__title" class="text-2xl font-bold text-slate-900">All Bookings</h2>
+        <p id="allBookings__p__subtitle" class="text-sm text-slate-500 mt-1">Every reservation made across the platform.</p>
       </div>
     </div>
 
     @if (topMovies().length > 0) {
-      <div class="mb-8">
-        <app-poster-carousel [movies]="topMovies()" kicker="Most booked" [enableBookingCta]="false" size="sm"></app-poster-carousel>
+      <div id="allBookings__div__carouselWrap" class="mb-8">
+        <app-poster-carousel id="allBookings__posterCarousel__topMovies" [movies]="topMovies()" kicker="Most booked" [enableBookingCta]="false" size="sm"></app-poster-carousel>
       </div>
     }
 
     <!-- Stats -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <div class="card p-5">
-        <div class="text-xs uppercase tracking-widest text-slate-400">Total Bookings</div>
-        <div class="text-3xl font-bold text-slate-900 mt-2">{{ bookings().length }}</div>
-        <div class="text-xs text-slate-500 mt-1">all time</div>
+    <div id="allBookings__div__stats" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div id="allBookings__div__statTotal" class="card p-5">
+        <div id="allBookings__div__statTotalLabel" class="text-xs uppercase tracking-widest text-slate-400">Total Bookings</div>
+        <div id="allBookings__div__statTotalValue" class="text-3xl font-bold text-slate-900 mt-2">{{ bookings().length }}</div>
+        <div id="allBookings__div__statTotalHint" class="text-xs text-slate-500 mt-1">all time</div>
       </div>
-      <div class="card p-5">
-        <div class="text-xs uppercase tracking-widest text-slate-400">Tickets Sold</div>
-        <div class="text-3xl font-bold text-slate-900 mt-2">{{ ticketsSold() }}</div>
-        <div class="text-xs text-slate-500 mt-1">confirmed seats</div>
+      <div id="allBookings__div__statTickets" class="card p-5">
+        <div id="allBookings__div__statTicketsLabel" class="text-xs uppercase tracking-widest text-slate-400">Tickets Sold</div>
+        <div id="allBookings__div__statTicketsValue" class="text-3xl font-bold text-slate-900 mt-2">{{ ticketsSold() }}</div>
+        <div id="allBookings__div__statTicketsHint" class="text-xs text-slate-500 mt-1">confirmed seats</div>
       </div>
-      <div class="card p-5">
-        <div class="text-xs uppercase tracking-widest text-slate-400">Revenue</div>
-        <div class="text-3xl font-bold text-emerald-600 mt-2">{{ revenue() | currency:'INR' }}</div>
-        <div class="text-xs text-slate-500 mt-1">net (after refunds)</div>
+      <div id="allBookings__div__statRevenue" class="card p-5">
+        <div id="allBookings__div__statRevenueLabel" class="text-xs uppercase tracking-widest text-slate-400">Revenue</div>
+        <div id="allBookings__div__statRevenueValue" class="text-3xl font-bold text-emerald-600 mt-2">{{ revenue() | currency:'INR' }}</div>
+        <div id="allBookings__div__statRevenueHint" class="text-xs text-slate-500 mt-1">net (after refunds)</div>
       </div>
-      <div class="card p-5">
-        <div class="text-xs uppercase tracking-widest text-slate-400">Refunded</div>
-        <div class="text-3xl font-bold text-rose-600 mt-2">{{ refunded() | currency:'INR' }}</div>
-        <div class="text-xs text-slate-500 mt-1">{{ cancelledCount() }} cancellations</div>
+      <div id="allBookings__div__statRefunded" class="card p-5">
+        <div id="allBookings__div__statRefundedLabel" class="text-xs uppercase tracking-widest text-slate-400">Refunded</div>
+        <div id="allBookings__div__statRefundedValue" class="text-3xl font-bold text-rose-600 mt-2">{{ refunded() | currency:'INR' }}</div>
+        <div id="allBookings__div__statRefundedHint" class="text-xs text-slate-500 mt-1">{{ cancelledCount() }} cancellations</div>
       </div>
     </div>
 
     <!-- Filter tabs -->
-    <div class="flex gap-1 border-b border-slate-200 mb-4">
+    <div id="allBookings__div__filterTabs" class="flex gap-1 border-b border-slate-200 mb-4">
       @for (f of filters; track f.key) {
-        <button type="button" (click)="setFilter(f.key)"
+        <button type="button" [id]="'allBookings__button__filter_' + f.key" [name]="'allBookings__button__filter_' + f.key" (click)="setFilter(f.key)"
                 [ngClass]="filter() === f.key
                   ? 'border-indigo-600 text-indigo-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700'"
                 class="px-4 py-2 text-sm font-semibold border-b-2 transition">
           {{ f.label }}
-          <span class="ml-1 text-xs rounded-full px-1.5 py-0.5"
+          <span [id]="'allBookings__span__filterCount_' + f.key" class="ml-1 text-xs rounded-full px-1.5 py-0.5"
                 [ngClass]="filter() === f.key ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'">
             {{ countFor(f.key) }}
           </span>
@@ -69,63 +69,63 @@ type Filter = 'all' | 'confirmed' | 'cancelled';
     </div>
 
     <!-- Table -->
-    <div class="card overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-slate-200 text-sm">
-          <thead class="bg-slate-50 sticky top-0">
-            <tr class="text-left text-xs font-semibold text-slate-600 uppercase">
-              <th class="px-6 py-3">Ref</th>
-              <th class="px-6 py-3">User</th>
-              <th class="px-6 py-3">Movie / Show</th>
-              <th class="px-6 py-3 text-center">Seats</th>
-              <th class="px-6 py-3">Seat Numbers</th>
-              <th class="px-6 py-3 text-right">Total</th>
-              <th class="px-6 py-3 text-right">Refund</th>
-              <th class="px-6 py-3">Status</th>
-              <th class="px-6 py-3">Booked At</th>
+    <div id="allBookings__div__tableCard" class="card overflow-hidden">
+      <div id="allBookings__div__tableScroll" class="overflow-x-auto">
+        <table id="allBookings__table__bookings" class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead id="allBookings__thead__main" class="bg-slate-50 sticky top-0">
+            <tr id="allBookings__tr__headRow" class="text-left text-xs font-semibold text-slate-600 uppercase">
+              <th id="allBookings__th__ref" class="px-6 py-3">Ref</th>
+              <th id="allBookings__th__user" class="px-6 py-3">User</th>
+              <th id="allBookings__th__movieShow" class="px-6 py-3">Movie / Show</th>
+              <th id="allBookings__th__seats" class="px-6 py-3 text-center">Seats</th>
+              <th id="allBookings__th__seatNumbers" class="px-6 py-3">Seat Numbers</th>
+              <th id="allBookings__th__total" class="px-6 py-3 text-right">Total</th>
+              <th id="allBookings__th__refund" class="px-6 py-3 text-right">Refund</th>
+              <th id="allBookings__th__status" class="px-6 py-3">Status</th>
+              <th id="allBookings__th__bookedAt" class="px-6 py-3">Booked At</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody id="allBookings__tbody__main" class="divide-y divide-slate-100">
             @for (b of filtered(); track b.id) {
-              <tr class="even:bg-slate-50/50 hover:bg-indigo-50/40 transition"
+              <tr [id]="'allBookings__tr__booking_' + b.id" class="even:bg-slate-50/50 hover:bg-indigo-50/40 transition"
                   [class.opacity-70]="b.status === 'CANCELLED'">
-                <td class="px-6 py-3 font-mono text-xs text-slate-700">{{ ref(b.id) }}</td>
-                <td class="px-6 py-3">
-                  <div class="flex items-center gap-2">
-                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                <td [id]="'allBookings__td__ref_' + b.id" class="px-6 py-3 font-mono text-xs text-slate-700">{{ ref(b.id) }}</td>
+                <td [id]="'allBookings__td__user_' + b.id" class="px-6 py-3">
+                  <div [id]="'allBookings__div__userBlock_' + b.id" class="flex items-center gap-2">
+                    <span [id]="'allBookings__span__userInitials_' + b.id" class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
                       {{ initials(b.user.username) }}
                     </span>
-                    <span class="font-medium text-slate-900">{{ b.user.username }}</span>
+                    <span [id]="'allBookings__span__username_' + b.id" class="font-medium text-slate-900">{{ b.user.username }}</span>
                   </div>
                 </td>
-                <td class="px-6 py-3">
-                  <div class="text-slate-900 font-medium">{{ b.show.movie.title }}</div>
-                  <div class="text-xs text-slate-500">{{ b.show.showTime | date:'MMM d, y · h:mm a' }}</div>
+                <td [id]="'allBookings__td__movieShow_' + b.id" class="px-6 py-3">
+                  <div [id]="'allBookings__div__movieTitle_' + b.id" class="text-slate-900 font-medium">{{ b.show.movie.title }}</div>
+                  <div [id]="'allBookings__div__showTime_' + b.id" class="text-xs text-slate-500">{{ b.show.showTime | date:'MMM d, y · h:mm a' }}</div>
                   @if (b.show.theater) {
-                    <div class="text-[11px] text-slate-400 mt-0.5">🏛 {{ b.show.theater.name }}</div>
+                    <div [id]="'allBookings__div__theater_' + b.id" class="text-[11px] text-slate-400 mt-0.5">🏛 {{ b.show.theater.name }}</div>
                   }
                 </td>
-                <td class="px-6 py-3 text-center font-semibold">{{ b.seatsBooked }}</td>
-                <td class="px-6 py-3 text-slate-500 font-mono text-xs">{{ b.seats || '—' }}</td>
-                <td class="px-6 py-3 text-right font-semibold">{{ b.totalAmount | currency:'INR' }}</td>
-                <td class="px-6 py-3 text-right">
+                <td [id]="'allBookings__td__seats_' + b.id" class="px-6 py-3 text-center font-semibold">{{ b.seatsBooked }}</td>
+                <td [id]="'allBookings__td__seatNumbers_' + b.id" class="px-6 py-3 text-slate-500 font-mono text-xs">{{ b.seats || '—' }}</td>
+                <td [id]="'allBookings__td__total_' + b.id" class="px-6 py-3 text-right font-semibold">{{ b.totalAmount | currency:'INR' }}</td>
+                <td [id]="'allBookings__td__refund_' + b.id" class="px-6 py-3 text-right">
                   @if (b.refundAmount != null) {
-                    <span class="font-semibold text-emerald-700">{{ b.refundAmount | currency:'INR' }}</span>
+                    <span [id]="'allBookings__span__refundValue_' + b.id" class="font-semibold text-emerald-700">{{ b.refundAmount | currency:'INR' }}</span>
                   } @else {
-                    <span class="text-slate-400">—</span>
+                    <span [id]="'allBookings__span__refundEmpty_' + b.id" class="text-slate-400">—</span>
                   }
                 </td>
-                <td class="px-6 py-3">
+                <td [id]="'allBookings__td__status_' + b.id" class="px-6 py-3">
                   @if (b.status === 'CANCELLED') {
-                    <span class="inline-flex items-center rounded-full bg-rose-100 text-rose-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">Cancelled</span>
+                    <span [id]="'allBookings__span__statusCancelled_' + b.id" class="inline-flex items-center rounded-full bg-rose-100 text-rose-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">Cancelled</span>
                   } @else {
-                    <span class="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">Confirmed</span>
+                    <span [id]="'allBookings__span__statusConfirmed_' + b.id" class="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">Confirmed</span>
                   }
                 </td>
-                <td class="px-6 py-3 text-slate-500 text-xs">{{ b.bookingDate | date:'short' }}</td>
+                <td [id]="'allBookings__td__bookedAt_' + b.id" class="px-6 py-3 text-slate-500 text-xs">{{ b.bookingDate | date:'short' }}</td>
               </tr>
             } @empty {
-              <tr><td colspan="9" class="px-6 py-10 text-center text-slate-400">No bookings to show.</td></tr>
+              <tr id="allBookings__tr__empty"><td id="allBookings__td__empty" colspan="9" class="px-6 py-10 text-center text-slate-400">No bookings to show.</td></tr>
             }
           </tbody>
         </table>

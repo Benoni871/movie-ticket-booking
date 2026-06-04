@@ -19,94 +19,94 @@ interface TheaterRow {
   standalone: true,
   imports: [CommonModule, DatePipe, IconComponent],
   template: `
-    <div class="flex items-end justify-between mb-6">
-      <div>
-        <h2 class="inline-flex items-center gap-2 text-2xl font-bold text-slate-900">
-          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-sm">
-            <app-icon name="building-2" [size]="18"></app-icon>
+    <div id="theaters__div__header" class="flex items-end justify-between mb-6">
+      <div id="theaters__div__headerText">
+        <h2 id="theaters__h2__title" class="inline-flex items-center gap-2 text-2xl font-bold text-slate-900">
+          <span id="theaters__span__titleIconWrap" class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-sm">
+            <app-icon id="theaters__icon__title" name="building-2" [size]="18"></app-icon>
           </span>
           Browse by Theater
         </h2>
-        <p class="text-sm text-slate-500 mt-1">Pick a theater to see which movies are playing there.</p>
+        <p id="theaters__p__subtitle" class="text-sm text-slate-500 mt-1">Pick a theater to see which movies are playing there.</p>
       </div>
-      <div class="text-sm text-slate-500">
-        <span class="font-semibold text-slate-900">{{ theaters().length }}</span> theaters
+      <div id="theaters__div__countWrap" class="text-sm text-slate-500">
+        <span id="theaters__span__count" class="font-semibold text-slate-900">{{ theaters().length }}</span> theaters
       </div>
     </div>
 
     @if (loading()) {
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div id="theaters__div__skeletonGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
         @for (_ of [1,2,3,4]; track $index) {
-          <div class="card p-6 animate-pulse">
-            <div class="h-5 bg-slate-200 rounded w-1/2 mb-3"></div>
-            <div class="h-3 bg-slate-100 rounded w-2/3 mb-2"></div>
-            <div class="h-3 bg-slate-100 rounded w-1/3"></div>
+          <div [id]="'theaters__div__skeletonCard_' + $index" class="card p-6 animate-pulse">
+            <div [id]="'theaters__div__skeletonLine1_' + $index" class="h-5 bg-slate-200 rounded w-1/2 mb-3"></div>
+            <div [id]="'theaters__div__skeletonLine2_' + $index" class="h-3 bg-slate-100 rounded w-2/3 mb-2"></div>
+            <div [id]="'theaters__div__skeletonLine3_' + $index" class="h-3 bg-slate-100 rounded w-1/3"></div>
           </div>
         }
       </div>
     } @else if (rows().length === 0) {
-      <div class="card p-12 text-center">
-        <div class="text-slate-300 mb-3 flex justify-center">
-          <app-icon name="building-2" [size]="56"></app-icon>
+      <div id="theaters__div__empty" class="card p-12 text-center">
+        <div id="theaters__div__emptyIconWrap" class="text-slate-300 mb-3 flex justify-center">
+          <app-icon id="theaters__icon__empty" name="building-2" [size]="56"></app-icon>
         </div>
-        <div class="text-slate-700 font-semibold">No theaters listed yet</div>
-        <div class="text-sm text-slate-500 mt-1">Check back soon, theater owners are signing up.</div>
+        <div id="theaters__div__emptyTitle" class="text-slate-700 font-semibold">No theaters listed yet</div>
+        <div id="theaters__div__emptySubtitle" class="text-sm text-slate-500 mt-1">Check back soon, theater owners are signing up.</div>
       </div>
     } @else {
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div id="theaters__div__grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
         @for (r of rows(); track r.theater.id) {
-          <div class="card p-6 hover:shadow-md transition">
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <h3 class="inline-flex items-center gap-1.5 text-lg font-bold text-slate-900 truncate">
-                  <app-icon name="building-2" [size]="18" class="text-indigo-500"></app-icon>
+          <div [id]="'theaters__div__card_' + r.theater.id" class="card p-6 hover:shadow-md transition">
+            <div [id]="'theaters__div__cardHead_' + r.theater.id" class="flex items-start justify-between gap-3">
+              <div [id]="'theaters__div__cardHeadText_' + r.theater.id" class="min-w-0">
+                <h3 [id]="'theaters__h3__cardTitle_' + r.theater.id" class="inline-flex items-center gap-1.5 text-lg font-bold text-slate-900 truncate">
+                  <app-icon [id]="'theaters__icon__cardTitle_' + r.theater.id" name="building-2" [size]="18" class="text-indigo-500"></app-icon>
                   {{ r.theater.name }}
                 </h3>
                 @if (r.theater.location) {
-                  <p class="text-xs text-slate-500 mt-0.5 inline-flex items-center gap-1">
-                    <app-icon name="map-pin" [size]="12"></app-icon>
+                  <p [id]="'theaters__p__cardLocation_' + r.theater.id" class="text-xs text-slate-500 mt-0.5 inline-flex items-center gap-1">
+                    <app-icon [id]="'theaters__icon__cardLocation_' + r.theater.id" name="map-pin" [size]="12"></app-icon>
                     {{ r.theater.location }}
                   </p>
                 }
               </div>
-              <span class="inline-flex items-center gap-1 rounded-full bg-indigo-50 text-indigo-700 px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap">
-                <app-icon name="calendar-clock" [size]="12"></app-icon>
+              <span [id]="'theaters__span__cardCount_' + r.theater.id" class="inline-flex items-center gap-1 rounded-full bg-indigo-50 text-indigo-700 px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap">
+                <app-icon [id]="'theaters__icon__cardCount_' + r.theater.id" name="calendar-clock" [size]="12"></app-icon>
                 {{ r.totalShows }} upcoming
               </span>
             </div>
 
             @if (r.movies.length > 0) {
-              <div class="mt-4">
-                <div class="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Now showing</div>
-                <ul class="space-y-2">
+              <div [id]="'theaters__div__cardMovies_' + r.theater.id" class="mt-4">
+                <div [id]="'theaters__div__cardMoviesLabel_' + r.theater.id" class="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Now showing</div>
+                <ul [id]="'theaters__ul__cardMovies_' + r.theater.id" class="space-y-2">
                   @for (m of r.movies.slice(0, 4); track m.id) {
-                    <li class="flex items-center gap-3 text-sm">
+                    <li [id]="'theaters__li__cardMovie_' + r.theater.id + '_' + m.id" class="flex items-center gap-3 text-sm">
                       @if (m.posterUrl) {
-                        <img [src]="m.posterUrl" alt="" class="h-10 w-7 rounded object-cover ring-1 ring-slate-200 shrink-0" />
+                        <img [id]="'theaters__img__cardMoviePoster_' + r.theater.id + '_' + m.id" [src]="m.posterUrl" alt="" class="h-10 w-7 rounded object-cover ring-1 ring-slate-200 shrink-0" />
                       } @else {
-                        <div class="h-10 w-7 rounded bg-slate-200 shrink-0"></div>
+                        <div [id]="'theaters__div__cardMoviePosterPlaceholder_' + r.theater.id + '_' + m.id" class="h-10 w-7 rounded bg-slate-200 shrink-0"></div>
                       }
-                      <div class="min-w-0 grow">
-                        <div class="font-medium text-slate-900 truncate">{{ m.title }}</div>
+                      <div [id]="'theaters__div__cardMovieInfo_' + r.theater.id + '_' + m.id" class="min-w-0 grow">
+                        <div [id]="'theaters__div__cardMovieTitle_' + r.theater.id + '_' + m.id" class="font-medium text-slate-900 truncate">{{ m.title }}</div>
                         @if (m.nextShow) {
-                          <div class="text-xs text-slate-500">Next: {{ m.nextShow | date:'EEE, MMM d · h:mm a' }}</div>
+                          <div [id]="'theaters__div__cardMovieNextShow_' + r.theater.id + '_' + m.id" class="text-xs text-slate-500">Next: {{ m.nextShow | date:'EEE, MMM d · h:mm a' }}</div>
                         }
                       </div>
                     </li>
                   }
                   @if (r.movies.length > 4) {
-                    <li class="text-xs text-slate-500">+ {{ r.movies.length - 4 }} more…</li>
+                    <li [id]="'theaters__li__cardMoviesMore_' + r.theater.id" class="text-xs text-slate-500">+ {{ r.movies.length - 4 }} more…</li>
                   }
                 </ul>
               </div>
             } @else {
-              <div class="mt-4 text-xs text-slate-400">No upcoming shows.</div>
+              <div [id]="'theaters__div__cardNoShows_' + r.theater.id" class="mt-4 text-xs text-slate-400">No upcoming shows.</div>
             }
 
-            <div class="mt-5 flex justify-end">
-              <button type="button" (click)="visit(r.theater)" class="btn-primary group inline-flex items-center gap-1.5">
+            <div [id]="'theaters__div__cardActions_' + r.theater.id" class="mt-5 flex justify-end">
+              <button type="button" [id]="'theaters__button__visit_' + r.theater.id" [name]="'theaters__button__visit_' + r.theater.id" (click)="visit(r.theater)" class="btn-primary group inline-flex items-center gap-1.5">
                 View movies
-                <app-icon name="arrow-right" [size]="15" class="group-hover:translate-x-0.5 transition"></app-icon>
+                <app-icon [id]="'theaters__icon__visit_' + r.theater.id" name="arrow-right" [size]="15" class="group-hover:translate-x-0.5 transition"></app-icon>
               </button>
             </div>
           </div>

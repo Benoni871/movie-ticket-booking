@@ -31,26 +31,26 @@ interface Seat {
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, DatePipe, CurrencyPipe, IconComponent],
   template: `
-    <a routerLink="/movies" class="group inline-flex items-center gap-1 text-sm text-indigo-600 hover:underline">
-      <app-icon name="arrow-left" [size]="14" class="group-hover:-translate-x-0.5 transition"></app-icon>
+    <a id="showSelect__a__backToMovies" routerLink="/movies" class="group inline-flex items-center gap-1 text-sm text-indigo-600 hover:underline">
+      <app-icon id="showSelect__icon__backToMovies" name="arrow-left" [size]="14" class="group-hover:-translate-x-0.5 transition"></app-icon>
       Back to movies
     </a>
 
     @if (loading()) {
-      <div class="text-slate-500 mt-6">Loading…</div>
+      <div id="showSelect__div__loading" class="text-slate-500 mt-6">Loading…</div>
     } @else {
       @if (movieHeader(); as m) {
-        <div class="mt-4 mb-6 flex items-end gap-4">
+        <div id="showSelect__div__movieHeader" class="mt-4 mb-6 flex items-end gap-4">
           @if (m.posterUrl) {
-            <img [src]="m.posterUrl" alt="" class="hidden sm:block h-24 w-16 rounded-md object-cover ring-1 ring-slate-200" />
+            <img id="showSelect__img__movieHeaderPoster" [src]="m.posterUrl" alt="" class="hidden sm:block h-24 w-16 rounded-md object-cover ring-1 ring-slate-200" />
           }
-          <div>
-            <h2 class="text-2xl font-bold text-slate-900">{{ m.title }}</h2>
-            <p class="text-sm text-slate-500">{{ m.genre }} · {{ m.durationMins }} min</p>
+          <div id="showSelect__div__movieHeaderText">
+            <h2 id="showSelect__h2__movieTitle" class="text-2xl font-bold text-slate-900">{{ m.title }}</h2>
+            <p id="showSelect__p__movieMeta" class="text-sm text-slate-500">{{ m.genre }} · {{ m.durationMins }} min</p>
             @if (movieLanguageList().length > 0) {
-              <div class="flex flex-wrap gap-1 mt-2">
+              <div id="showSelect__div__movieLanguages" class="flex flex-wrap gap-1 mt-2">
                 @for (lang of movieLanguageList(); track lang) {
-                  <span class="inline-flex items-center rounded-md bg-indigo-50 text-indigo-700 px-2 py-0.5 text-[11px] font-semibold">
+                  <span [id]="'showSelect__span__movieLanguage_' + lang" class="inline-flex items-center rounded-md bg-indigo-50 text-indigo-700 px-2 py-0.5 text-[11px] font-semibold">
                     {{ lang }}
                   </span>
                 }
@@ -60,13 +60,13 @@ interface Seat {
         </div>
 
         @if (trailerSafeUrl()) {
-          <div class="mb-6">
-            <div class="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-slate-400 mb-2">
-              <app-icon name="play-circle" [size]="14"></app-icon>
+          <div id="showSelect__div__trailerWrap" class="mb-6">
+            <div id="showSelect__div__trailerLabel" class="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-slate-400 mb-2">
+              <app-icon id="showSelect__icon__trailerLabel" name="play-circle" [size]="14"></app-icon>
               Trailer
             </div>
-            <div class="aspect-video w-full max-w-2xl rounded-xl overflow-hidden bg-black ring-1 ring-slate-200 shadow-sm">
-              <iframe [src]="trailerSafeUrl()" class="w-full h-full"
+            <div id="showSelect__div__trailerFrame" class="aspect-video w-full max-w-2xl rounded-xl overflow-hidden bg-black ring-1 ring-slate-200 shadow-sm">
+              <iframe id="showSelect__iframe__trailer" name="showSelect__iframe__trailer" [src]="trailerSafeUrl()" class="w-full h-full"
                       allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowfullscreen
                       title="Trailer preview"></iframe>
@@ -76,63 +76,63 @@ interface Seat {
       }
 
       <!-- Date filter -->
-      <div class="flex flex-wrap items-end gap-3 mb-4">
-        <div>
-          <label class="label inline-flex items-center gap-1.5">
-            <app-icon name="calendar" [size]="13"></app-icon>
+      <div id="showSelect__div__dateFilterBar" class="flex flex-wrap items-end gap-3 mb-4">
+        <div id="showSelect__div__dateFilterWrap">
+          <label id="showSelect__label__dateFilter" class="label inline-flex items-center gap-1.5">
+            <app-icon id="showSelect__icon__dateFilter" name="calendar" [size]="13"></app-icon>
             Filter by date
           </label>
-          <input type="date" class="input"
+          <input type="date" id="showSelect__input__dateFilter" name="showSelect__input__dateFilter" class="input"
                  [(ngModel)]="dateFilter"
                  (ngModelChange)="onDateChange($event)" />
         </div>
         @if (dateFilter) {
-          <button type="button" class="btn-secondary inline-flex items-center gap-1" (click)="clearDate()">
-            <app-icon name="x" [size]="14"></app-icon>
+          <button type="button" id="showSelect__button__clearDate" name="showSelect__button__clearDate" class="btn-secondary inline-flex items-center gap-1" (click)="clearDate()">
+            <app-icon id="showSelect__icon__clearDate" name="x" [size]="14"></app-icon>
             Clear
           </button>
         }
-        <div class="text-xs text-slate-500 ml-auto">
+        <div id="showSelect__div__showCount" class="text-xs text-slate-500 ml-auto">
           {{ shows().length }} show(s)
           @if (dateFilter) { on {{ dateFilter }} }
         </div>
       </div>
 
       @if (shows().length === 0) {
-        <div class="card p-12 text-center mt-2">
-          <div class="text-5xl text-slate-300 mb-3">𓎟</div>
-          <div class="text-slate-700 font-semibold">
+        <div id="showSelect__div__noShows" class="card p-12 text-center mt-2">
+          <div id="showSelect__div__noShowsIcon" class="text-5xl text-slate-300 mb-3">𓎟</div>
+          <div id="showSelect__div__noShowsTitle" class="text-slate-700 font-semibold">
             @if (dateFilter) { No shows on this date }
             @else { No upcoming shows scheduled }
           </div>
-          <div class="text-sm text-slate-500 mt-1">
+          <div id="showSelect__div__noShowsSubtitle" class="text-sm text-slate-500 mt-1">
             @if (dateFilter) { Try a different date or clear the filter. }
             @else { All shows for this movie have already started or aren't scheduled yet. }
           </div>
 
           @if (!dateFilter) {
-            <div class="mt-6 inline-flex flex-col items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-6 py-5">
-              <div class="text-sm font-semibold text-indigo-900">
+            <div id="showSelect__div__interestPanel" class="mt-6 inline-flex flex-col items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-6 py-5">
+              <div id="showSelect__div__interestTitle" class="text-sm font-semibold text-indigo-900">
                 Want to see this on the big screen?
               </div>
-              <div class="text-xs text-indigo-700/80">
+              <div id="showSelect__div__interestSubtitle" class="text-xs text-indigo-700/80">
                 Let theater owners know there's demand.
               </div>
               @if (interested()) {
-                <div class="mt-1 inline-flex items-center gap-2 rounded-full bg-emerald-100 text-emerald-800 px-3 py-1.5 text-xs font-bold">
-                  <app-icon name="check-circle-2" [size]="14"></app-icon>
+                <div id="showSelect__div__interestRegistered" class="mt-1 inline-flex items-center gap-2 rounded-full bg-emerald-100 text-emerald-800 px-3 py-1.5 text-xs font-bold">
+                  <app-icon id="showSelect__icon__interestRegistered" name="check-circle-2" [size]="14"></app-icon>
                   Interest registered · {{ interestCount() }} {{ interestCount() === 1 ? 'person' : 'people' }} interested
                 </div>
               } @else {
-                <button type="button" (click)="showInterest()"
+                <button type="button" id="showSelect__button__interest" name="showSelect__button__interest" (click)="showInterest()"
                         [disabled]="interestSubmitting()"
                         class="group/btn mt-1 inline-flex items-center gap-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm font-bold shadow-sm transition disabled:opacity-50">
-                  <app-icon name="heart" [size]="16" class="group-hover/btn:scale-110 transition"></app-icon>
+                  <app-icon id="showSelect__icon__interest" name="heart" [size]="16" class="group-hover/btn:scale-110 transition"></app-icon>
                   {{ interestSubmitting() ? 'Saving…' : "I'm interested" }}
                 </button>
                 @if (interestCount() > 0) {
-                  <div class="inline-flex items-center gap-1 text-[11px] text-indigo-600">
-                    <app-icon name="users" [size]="12"></app-icon>
+                  <div id="showSelect__div__interestOthers" class="inline-flex items-center gap-1 text-[11px] text-indigo-600">
+                    <app-icon id="showSelect__icon__interestOthers" name="users" [size]="12"></app-icon>
                     {{ interestCount() }} other {{ interestCount() === 1 ? 'person' : 'people' }} already interested
                   </div>
                 }
@@ -142,39 +142,39 @@ interface Seat {
         </div>
       } @else {
 
-      <h3 class="text-sm font-semibold text-slate-700 mb-3">Choose a showtime</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <h3 id="showSelect__h3__chooseShowtime" class="text-sm font-semibold text-slate-700 mb-3">Choose a showtime</h3>
+      <div id="showSelect__div__showtimesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         @for (s of shows(); track s.id) {
-          <button type="button"
+          <button type="button" [id]="'showSelect__button__showtime_' + s.id" [name]="'showSelect__button__showtime_' + s.id"
                   (click)="select(s)"
                   [class.ring-2]="selected()?.id === s.id"
                   [class.ring-indigo-500]="selected()?.id === s.id"
                   class="card p-4 text-left hover:shadow-md transition disabled:opacity-50"
                   [disabled]="s.availableSeats === 0">
-            <div class="flex items-start justify-between gap-2">
-              <div class="font-semibold text-slate-900">{{ s.showTime | date:'EEE, MMM d · h:mm a' }}</div>
-              <span class="text-[10px] font-semibold uppercase tracking-wider rounded-full px-2 py-0.5 bg-indigo-50 text-indigo-700 whitespace-nowrap">
+            <div [id]="'showSelect__div__showtimeHead_' + s.id" class="flex items-start justify-between gap-2">
+              <div [id]="'showSelect__div__showtimeTime_' + s.id" class="font-semibold text-slate-900">{{ s.showTime | date:'EEE, MMM d · h:mm a' }}</div>
+              <span [id]="'showSelect__span__showtimeUntil_' + s.id" class="text-[10px] font-semibold uppercase tracking-wider rounded-full px-2 py-0.5 bg-indigo-50 text-indigo-700 whitespace-nowrap">
                 {{ untilLabel(s) }}
               </span>
             </div>
             @if (s.theater) {
-              <div class="text-xs text-slate-600 mt-1 flex items-center gap-1.5">
-                <app-icon name="building-2" [size]="12" class="text-slate-400"></app-icon>
-                <span class="font-medium truncate">{{ s.theater.name }}</span>
+              <div [id]="'showSelect__div__showtimeTheater_' + s.id" class="text-xs text-slate-600 mt-1 flex items-center gap-1.5">
+                <app-icon [id]="'showSelect__icon__showtimeTheater_' + s.id" name="building-2" [size]="12" class="text-slate-400"></app-icon>
+                <span [id]="'showSelect__span__showtimeTheaterName_' + s.id" class="font-medium truncate">{{ s.theater.name }}</span>
                 @if (s.theater.location) {
-                  <span class="text-slate-400">· {{ s.theater.location }}</span>
+                  <span [id]="'showSelect__span__showtimeTheaterLocation_' + s.id" class="text-slate-400">· {{ s.theater.location }}</span>
                 }
               </div>
             }
             @if (s.language) {
-              <div class="mt-1">
-                <span class="inline-flex items-center rounded-md bg-amber-50 text-amber-800 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
+              <div [id]="'showSelect__div__showtimeLanguageWrap_' + s.id" class="mt-1">
+                <span [id]="'showSelect__span__showtimeLanguage_' + s.id" class="inline-flex items-center rounded-md bg-amber-50 text-amber-800 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
                   {{ s.language }}
                 </span>
               </div>
             }
-            <div class="text-sm text-slate-500 mt-1">{{ s.ticketPrice | currency:'INR' }}</div>
-            <div class="text-xs mt-2"
+            <div [id]="'showSelect__div__showtimePrice_' + s.id" class="text-sm text-slate-500 mt-1">{{ s.ticketPrice | currency:'INR' }}</div>
+            <div [id]="'showSelect__div__showtimeAvail_' + s.id" class="text-xs mt-2"
                  [class.text-emerald-600]="s.availableSeats > 10"
                  [class.text-amber-600]="s.availableSeats > 0 && s.availableSeats <= 10"
                  [class.text-rose-600]="s.availableSeats === 0">
@@ -185,24 +185,24 @@ interface Seat {
       </div>
 
       @if (selected()) {
-        <div class="mt-8">
-          <h3 class="text-sm font-semibold text-slate-700 mb-2">Select your seats</h3>
+        <div id="showSelect__div__seatSection" class="mt-8">
+          <h3 id="showSelect__h3__seatSectionTitle" class="text-sm font-semibold text-slate-700 mb-2">Select your seats</h3>
 
-          <div class="card p-6">
-            <div class="mx-auto w-3/4 max-w-md mb-1">
-              <div class="h-2 bg-gradient-to-r from-transparent via-indigo-400 to-transparent rounded"></div>
-              <div class="text-center text-xs text-slate-400 mt-1 uppercase tracking-widest">Screen</div>
+          <div id="showSelect__div__seatCard" class="card p-6">
+            <div id="showSelect__div__screenWrap" class="mx-auto w-3/4 max-w-md mb-1">
+              <div id="showSelect__div__screenBar" class="h-2 bg-gradient-to-r from-transparent via-indigo-400 to-transparent rounded"></div>
+              <div id="showSelect__div__screenLabel" class="text-center text-xs text-slate-400 mt-1 uppercase tracking-widest">Screen</div>
             </div>
 
-            <div class="mt-6 inline-block mx-auto w-full">
+            <div id="showSelect__div__seatGrid" class="mt-6 inline-block mx-auto w-full">
               @for (row of rows(); track row) {
-                <div class="flex items-center justify-center gap-2 mb-2">
-                  <span class="w-6 text-xs font-semibold text-slate-500">{{ row }}</span>
+                <div [id]="'showSelect__div__seatRow_' + row" class="flex items-center justify-center gap-2 mb-2">
+                  <span [id]="'showSelect__span__seatRowLabelLeft_' + row" class="w-6 text-xs font-semibold text-slate-500">{{ row }}</span>
                   @for (seat of seatsByRow().get(row) ?? []; track seat.id) {
                     @if (seat.col === 6) {
-                      <span class="w-4"></span>
+                      <span [id]="'showSelect__span__seatAisle_' + seat.id" class="w-4"></span>
                     }
-                    <button type="button"
+                    <button type="button" [id]="'showSelect__button__seat_' + seat.id" [name]="'showSelect__button__seat_' + seat.id"
                             (click)="toggleSeat(seat)"
                             [disabled]="seat.booked"
                             [title]="seat.id"
@@ -218,74 +218,74 @@ interface Seat {
                       {{ seat.col }}
                     </button>
                   }
-                  <span class="w-6 text-xs font-semibold text-slate-500 text-right">{{ row }}</span>
+                  <span [id]="'showSelect__span__seatRowLabelRight_' + row" class="w-6 text-xs font-semibold text-slate-500 text-right">{{ row }}</span>
                 </div>
               }
             </div>
 
-            <div class="flex items-center justify-center gap-6 mt-6 text-xs text-slate-600">
-              <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-slate-200"></span> Available</div>
-              <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-indigo-600"></span> Selected</div>
-              <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-slate-400 opacity-50"></span> Booked</div>
+            <div id="showSelect__div__seatLegend" class="flex items-center justify-center gap-6 mt-6 text-xs text-slate-600">
+              <div id="showSelect__div__legendAvailable" class="flex items-center gap-2"><span id="showSelect__span__legendAvailableSwatch" class="w-4 h-4 rounded bg-slate-200"></span> Available</div>
+              <div id="showSelect__div__legendSelected" class="flex items-center gap-2"><span id="showSelect__span__legendSelectedSwatch" class="w-4 h-4 rounded bg-indigo-600"></span> Selected</div>
+              <div id="showSelect__div__legendBooked" class="flex items-center gap-2"><span id="showSelect__span__legendBookedSwatch" class="w-4 h-4 rounded bg-slate-400 opacity-50"></span> Booked</div>
             </div>
           </div>
 
-          <div class="card p-5 mt-4">
+          <div id="showSelect__div__summaryCard" class="card p-5 mt-4">
             @if (selectedSeats().size === 0) {
-              <div class="text-sm text-slate-500">Pick at least one seat to continue.</div>
+              <div id="showSelect__div__summaryEmpty" class="text-sm text-slate-500">Pick at least one seat to continue.</div>
             } @else {
-              <div class="text-sm mb-3">
-                <span class="text-slate-500">Selected seats:</span>
-                <span class="font-semibold text-slate-900 ml-1">{{ selectedSeatsList() }}</span>
+              <div id="showSelect__div__summarySelected" class="text-sm mb-3">
+                <span id="showSelect__span__summarySelectedLabel" class="text-slate-500">Selected seats:</span>
+                <span id="showSelect__span__summarySelectedValue" class="font-semibold text-slate-900 ml-1">{{ selectedSeatsList() }}</span>
               </div>
 
               @if (selected()?.couponCode && !couponApplied()) {
-                <div class="mb-3 flex items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2">
-                  <div class="inline-flex items-center gap-1.5 text-sm">
-                    <app-icon name="ticket-percent" [size]="16" class="text-rose-600"></app-icon>
-                    <span class="font-mono font-bold text-rose-700">{{ selected()!.couponCode }}</span>
-                    <span class="text-rose-700">— save {{ selected()!.discountPercent }}% on this show</span>
+                <div id="showSelect__div__couponOffer" class="mb-3 flex items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2">
+                  <div id="showSelect__div__couponOfferText" class="inline-flex items-center gap-1.5 text-sm">
+                    <app-icon id="showSelect__icon__couponOffer" name="ticket-percent" [size]="16" class="text-rose-600"></app-icon>
+                    <span id="showSelect__span__couponOfferCode" class="font-mono font-bold text-rose-700">{{ selected()!.couponCode }}</span>
+                    <span id="showSelect__span__couponOfferDesc" class="text-rose-700">— save {{ selected()!.discountPercent }}% on this show</span>
                   </div>
-                  <button type="button" class="inline-flex items-center rounded-md bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 transition shadow-sm hover:shadow"
+                  <button type="button" id="showSelect__button__applyCoupon" name="showSelect__button__applyCoupon" class="inline-flex items-center rounded-md bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 transition shadow-sm hover:shadow"
                           (click)="applyCoupon()">
                     Apply
                   </button>
                 </div>
               }
               @if (couponApplied()) {
-                <div class="mb-3 flex items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
-                  <div class="inline-flex items-center gap-1.5 text-sm text-emerald-800">
-                    <app-icon name="check-circle-2" [size]="16" class="text-emerald-600"></app-icon>
-                    Coupon <span class="font-mono font-bold">{{ selected()!.couponCode }}</span> applied — {{ selected()!.discountPercent }}% off
+                <div id="showSelect__div__couponApplied" class="mb-3 flex items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+                  <div id="showSelect__div__couponAppliedText" class="inline-flex items-center gap-1.5 text-sm text-emerald-800">
+                    <app-icon id="showSelect__icon__couponApplied" name="check-circle-2" [size]="16" class="text-emerald-600"></app-icon>
+                    Coupon <span id="showSelect__span__couponAppliedCode" class="font-mono font-bold">{{ selected()!.couponCode }}</span> applied — {{ selected()!.discountPercent }}% off
                   </div>
-                  <button type="button" class="text-xs text-emerald-700 hover:underline" (click)="removeCoupon()">Remove</button>
+                  <button type="button" id="showSelect__button__removeCoupon" name="showSelect__button__removeCoupon" class="text-xs text-emerald-700 hover:underline" (click)="removeCoupon()">Remove</button>
                 </div>
               }
 
-              <dl class="text-sm space-y-1 border-t border-slate-100 pt-3">
-                <div class="flex justify-between">
-                  <dt class="text-slate-500">Subtotal ({{ selectedSeats().size }} × {{ selected()!.ticketPrice | currency:'INR' }})</dt>
-                  <dd class="text-slate-900 font-medium">{{ subtotal() | currency:'INR' }}</dd>
+              <dl id="showSelect__dl__summary" class="text-sm space-y-1 border-t border-slate-100 pt-3">
+                <div id="showSelect__div__summarySubtotalRow" class="flex justify-between">
+                  <dt id="showSelect__dt__summarySubtotal" class="text-slate-500">Subtotal ({{ selectedSeats().size }} × {{ selected()!.ticketPrice | currency:'INR' }})</dt>
+                  <dd id="showSelect__dd__summarySubtotal" class="text-slate-900 font-medium">{{ subtotal() | currency:'INR' }}</dd>
                 </div>
                 @if (couponApplied()) {
-                  <div class="flex justify-between text-rose-600">
-                    <dt>Discount ({{ selected()!.discountPercent }}%)</dt>
-                    <dd class="font-medium">−{{ discount() | currency:'INR' }}</dd>
+                  <div id="showSelect__div__summaryDiscountRow" class="flex justify-between text-rose-600">
+                    <dt id="showSelect__dt__summaryDiscount">Discount ({{ selected()!.discountPercent }}%)</dt>
+                    <dd id="showSelect__dd__summaryDiscount" class="font-medium">−{{ discount() | currency:'INR' }}</dd>
                   </div>
                 }
-                <div class="flex justify-between">
-                  <dt class="text-slate-500">Tax (4%)</dt>
-                  <dd class="text-slate-900 font-medium">{{ tax() | currency:'INR' }}</dd>
+                <div id="showSelect__div__summaryTaxRow" class="flex justify-between">
+                  <dt id="showSelect__dt__summaryTax" class="text-slate-500">Tax (4%)</dt>
+                  <dd id="showSelect__dd__summaryTax" class="text-slate-900 font-medium">{{ tax() | currency:'INR' }}</dd>
                 </div>
-                <div class="flex justify-between border-t border-slate-200 pt-1.5 mt-1">
-                  <dt class="font-bold text-slate-900">Total</dt>
-                  <dd class="font-bold text-slate-900 text-base">{{ total() | currency:'INR' }}</dd>
+                <div id="showSelect__div__summaryTotalRow" class="flex justify-between border-t border-slate-200 pt-1.5 mt-1">
+                  <dt id="showSelect__dt__summaryTotal" class="font-bold text-slate-900">Total</dt>
+                  <dd id="showSelect__dd__summaryTotal" class="font-bold text-slate-900 text-base">{{ total() | currency:'INR' }}</dd>
                 </div>
               </dl>
             }
 
-            <div class="mt-4 flex justify-end">
-              <button class="btn-primary" (click)="confirm()"
+            <div id="showSelect__div__summaryActions" class="mt-4 flex justify-end">
+              <button id="showSelect__button__confirm" name="showSelect__button__confirm" class="btn-primary" (click)="confirm()"
                       [disabled]="booking() || selectedSeats().size === 0">
                 {{ booking() ? 'Booking…' : 'Confirm Booking' }}
               </button>
@@ -293,7 +293,7 @@ interface Seat {
           </div>
 
           @if (error()) {
-            <div class="mt-4 text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-md p-3">
+            <div id="showSelect__div__error" class="mt-4 text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-md p-3">
               {{ error() }}
             </div>
           }
