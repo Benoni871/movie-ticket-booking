@@ -1,0 +1,7 @@
+@media print {
+  body * { visibility: hidden; }
+  .fixed.inset-0 { position: static !important; background: transparent !important; backdrop-filter: none !important; }
+  .fixed.inset-0, .fixed.inset-0 * { visibility: visible; }
+  .fixed.inset-0 button[aria-label="Close ticket"],
+  .fixed.inset-0 .mt-4 { display: none !important; }
+}

@@ -1,0 +1,412 @@
+<div id="myBookings__div__header" class="flex items-end justify-between mb-6">
+  <div id="myBookings__div__headerText">
+    <h2 id="myBookings__h2__title" class="text-2xl font-bold text-slate-900">My Bookings</h2>
+    <p id="myBookings__p__subtitle" class="text-sm text-slate-500 mt-1">Your past and upcoming reservations.</p>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div id="myBookings__div__tabs" class="flex gap-1 border-b border-slate-200 mb-6">
+  @for (t of tabs; track t.key) {
+    <button type="button" [id]="'myBookings__button__tab_' + t.key" [name]="'myBookings__button__tab_' + t.key" (click)="setTab(t.key)"
+            [ngClass]="tab() === t.key
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700'"
+            class="px-4 py-2 text-sm font-semibold border-b-2 transition">
+      {{ t.label }}
+      <span [id]="'myBookings__span__tabCount_' + t.key" class="ml-1 text-xs rounded-full px-1.5 py-0.5"
+            [ngClass]="tab() === t.key ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'">
+        {{ countFor(t.key) }}
+      </span>
+    </button>
+  }
+</div>
+
+@if (loading()) {
+  <div id="myBookings__div__skeletonList" class="space-y-3">
+    @for (_ of [1,2,3]; track $index) {
+      <div [id]="'myBookings__div__skeletonCard_' + $index" class="card p-6 animate-pulse">
+        <div [id]="'myBookings__div__skeletonLine1_' + $index" class="h-5 bg-slate-200 rounded w-1/3 mb-3"></div>
+        <div [id]="'myBookings__div__skeletonLine2_' + $index" class="h-3 bg-slate-100 rounded w-2/3 mb-2"></div>
+        <div [id]="'myBookings__div__skeletonLine3_' + $index" class="h-3 bg-slate-100 rounded w-1/2"></div>
+      </div>
+    }
+  </div>
+} @else if (visible().length === 0) {
+  <div id="myBookings__div__empty" class="card p-12 text-center">
+    <div id="myBookings__div__emptyIconWrap" class="text-slate-300 mb-3 flex justify-center">
+      <app-icon id="myBookings__icon__empty" name="ticket" [size]="56"></app-icon>
+    </div>
+    <div id="myBookings__div__emptyTitle" class="text-slate-700 font-semibold">{{ emptyTitle() }}</div>
+    <div id="myBookings__div__emptySubtitle" class="text-sm text-slate-500 mt-1">{{ emptySubtitle() }}</div>
+    @if (tab() === 'upcoming') {
+      <a id="myBookings__a__browseMovies" routerLink="/movies" class="btn-primary mt-4 inline-flex items-center gap-1.5 group">
+        <app-icon id="myBookings__icon__browseMovies" name="film" [size]="16" class="group-hover:scale-110 transition"></app-icon>
+        Browse movies
+      </a>
+    }
+  </div>
+} @else {
+  <div id="myBookings__div__bookingsList" class="space-y-5">
+    @for (b of visible(); track b.id) {
+      <div [id]="'myBookings__div__bookingWrap_' + b.id" class="relative">
+        <div [id]="'myBookings__div__bookingCard_' + b.id" class="card flex flex-col lg:flex-row overflow-hidden"
+             [class.opacity-70]="b.status === 'CANCELLED'"
+             [class.ring-2]="isStartingSoon(b)"
+             [class.ring-amber-400]="isStartingSoon(b)">
+
+          <div [id]="'myBookings__div__bookingMain_' + b.id" class="flex p-5 gap-5 grow">
+            @if (b.show.movie.posterUrl) {
+              <img [id]="'myBookings__img__bookingPoster_' + b.id" [src]="b.show.movie.posterUrl" alt=""
+                   class="hidden sm:block w-24 h-36 rounded-md object-cover ring-1 ring-slate-200 shrink-0" />
+            }
+            <div [id]="'myBookings__div__bookingBody_' + b.id" class="grow min-w-0">
+              <div [id]="'myBookings__div__bookingHead_' + b.id" class="flex items-start justify-between gap-2">
+                <div [id]="'myBookings__div__bookingTitleWrap_' + b.id">
+                  <h3 [id]="'myBookings__h3__bookingTitle_' + b.id" class="font-bold text-slate-900 text-lg leading-tight">{{ b.show.movie.title }}</h3>
+                  <p [id]="'myBookings__p__bookingMeta_' + b.id" class="text-xs text-slate-500 mt-0.5">{{ b.show.movie.genre }} · {{ b.show.movie.durationMins }} min</p>
+                </div>
+                <div [id]="'myBookings__div__bookingStatusWrap_' + b.id" class="flex flex-col items-end gap-1 shrink-0">
+                  <span [id]="'myBookings__span__bookingStatus_' + b.id" [ngClass]="statusClasses(b.status)"
+                        class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider">
+                    {{ b.status }}
+                  </span>
+                  @if (isStartingSoon(b)) {
+                    <span [id]="'myBookings__span__bookingStartingSoon_' + b.id" class="inline-flex items-center gap-1 rounded-full bg-amber-400 text-amber-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm animate-pulse">
+                      <app-icon [id]="'myBookings__icon__bookingStartingSoon_' + b.id" name="alarm-clock" [size]="11"></app-icon>
+                      Starting soon
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <dl [id]="'myBookings__dl__bookingDetails_' + b.id" class="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                <dt [id]="'myBookings__dt__showLabel_' + b.id" class="text-slate-500">Show</dt>
+                <dd [id]="'myBookings__dd__showValue_' + b.id" class="text-slate-900 font-medium">{{ b.show.showTime | date:'EEE, MMM d · h:mm a' }}</dd>
+                @if (b.show.theater) {
+                  <dt [id]="'myBookings__dt__theaterLabel_' + b.id" class="text-slate-500">Theater</dt>
+                  <dd [id]="'myBookings__dd__theaterValue_' + b.id" class="text-slate-900 font-medium inline-flex items-center gap-1.5">
+                    <app-icon [id]="'myBookings__icon__theater_' + b.id" name="building-2" [size]="14" class="text-slate-500"></app-icon>
+                    {{ b.show.theater.name }}
+                    @if (b.show.theater.location) {
+                      <span [id]="'myBookings__span__theaterLocation_' + b.id" class="text-xs text-slate-500 ml-1">{{ b.show.theater.location }}</span>
+                    }
+                  </dd>
+                }
+                <dt [id]="'myBookings__dt__seatsLabel_' + b.id" class="text-slate-500">Seats</dt>
+                <dd [id]="'myBookings__dd__seatsValue_' + b.id" class="text-slate-900 font-medium">
+                  {{ b.seatsBooked }}
+                  @if (b.seats) {
+                    <span [id]="'myBookings__span__seatsList_' + b.id" class="font-mono text-xs text-slate-500 ml-1">({{ b.seats }})</span>
+                  }
+                </dd>
+                <dt [id]="'myBookings__dt__totalLabel_' + b.id" class="text-slate-500">Total paid</dt>
+                <dd [id]="'myBookings__dd__totalValue_' + b.id" class="text-slate-900 font-semibold">{{ b.totalAmount | currency:'INR' }}</dd>
+                @if (b.status === 'CANCELLED' && b.refundAmount != null) {
+                  <dt [id]="'myBookings__dt__refundLabel_' + b.id" class="text-slate-500">Refunded</dt>
+                  <dd [id]="'myBookings__dd__refundValue_' + b.id" class="text-emerald-700 font-semibold">{{ b.refundAmount | currency:'INR' }}</dd>
+                }
+              </dl>
+
+              @if (b.status === 'CONFIRMED' && !isShowPast(b)) {
+                <div [id]="'myBookings__div__untilWrap_' + b.id" class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                  <app-icon [id]="'myBookings__icon__until_' + b.id" name="clock" [size]="12"></app-icon>
+                  {{ untilLabel(b) }}
+                </div>
+              }
+            </div>
+          </div>
+
+          <div [id]="'myBookings__div__tearLine_' + b.id" class="relative hidden lg:block w-px bg-slate-200">
+            <span [id]="'myBookings__span__tearTop_' + b.id" class="absolute -left-2 -top-2 h-4 w-4 rounded-full bg-slate-50 ring-1 ring-slate-200"></span>
+            <span [id]="'myBookings__span__tearBottom_' + b.id" class="absolute -left-2 -bottom-2 h-4 w-4 rounded-full bg-slate-50 ring-1 ring-slate-200"></span>
+            <div [id]="'myBookings__div__tearDashed_' + b.id" class="absolute inset-y-3 left-0 border-l border-dashed border-slate-300"></div>
+          </div>
+
+          <div [id]="'myBookings__div__bookingStub_' + b.id" class="bg-slate-50 lg:bg-white p-5 lg:w-64 flex flex-col justify-between gap-4">
+            <div [id]="'myBookings__div__bookingStubInfo_' + b.id">
+              <div [id]="'myBookings__div__refLabel_' + b.id" class="text-[10px] uppercase tracking-widest text-slate-400">Reference</div>
+              <div [id]="'myBookings__div__refValue_' + b.id" class="font-mono text-sm font-bold text-slate-900 mt-1">{{ ref(b.id) }}</div>
+              <div [id]="'myBookings__div__bookedDate_' + b.id" class="text-[10px] text-slate-500 mt-2">Booked {{ b.bookingDate | date:'MMM d, y · h:mm a' }}</div>
+              @if (b.status === 'CANCELLED' && b.cancelledAt) {
+                <div [id]="'myBookings__div__cancelledDate_' + b.id" class="text-[10px] text-rose-600 mt-1">Cancelled {{ b.cancelledAt | date:'MMM d · h:mm a' }}</div>
+              }
+            </div>
+
+            <div [id]="'myBookings__div__bookingActions_' + b.id" class="flex flex-col gap-2">
+              @if (b.status === 'CONFIRMED') {
+                <button type="button" [id]="'myBookings__button__showTicket_' + b.id" [name]="'myBookings__button__showTicket_' + b.id"
+                        class="group/btn inline-flex items-center justify-center gap-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2 transition"
+                        (click)="openTicket(b)">
+                  <app-icon [id]="'myBookings__icon__showTicket_' + b.id" name="ticket" [size]="14" class="group-hover/btn:rotate-6 transition"></app-icon>
+                  Show Ticket
+                </button>
+              }
+              @if (canCancel(b)) {
+                <button type="button" [id]="'myBookings__button__cancel_' + b.id" [name]="'myBookings__button__cancel_' + b.id" class="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-md py-2 transition"
+                        (click)="openCancel(b)">
+                  <app-icon [id]="'myBookings__icon__cancel_' + b.id" name="circle-x" [size]="13"></app-icon>
+                  Cancel booking
+                </button>
+              } @else if (b.status === 'CONFIRMED' && !isShowPast(b)) {
+                <span [id]="'myBookings__span__cancelClosed_' + b.id" class="inline-flex items-center justify-center gap-1 text-[10px] text-slate-400 text-center">
+                  <app-icon [id]="'myBookings__icon__cancelClosed_' + b.id" name="lock" [size]="10"></app-icon>
+                  Cancellation closed (under 2h)
+                </span>
+              }
+
+              @if (isShowOver(b) && b.status === 'CONFIRMED') {
+                @if (myRating(b.id); as r) {
+                  <div [id]="'myBookings__div__rated_' + b.id" class="inline-flex items-center justify-center gap-1 text-center text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-md py-2">
+                    <app-icon [id]="'myBookings__icon__rated_' + b.id" name="check-circle-2" [size]="13"></app-icon>
+                    Rated {{ r }} 🍅
+                  </div>
+                } @else if (canReview(b.id)) {
+                  <button type="button" [id]="'myBookings__button__rate_' + b.id" [name]="'myBookings__button__rate_' + b.id"
+                          class="group/btn inline-flex items-center justify-center gap-1.5 rounded-md bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold py-2 transition"
+                          (click)="openReview(b)">
+                    <span [id]="'myBookings__span__rateEmoji_' + b.id" class="text-base leading-none group-hover/btn:scale-125 transition-transform">🍅</span>
+                    Rate this movie
+                  </button>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+<!-- Cancel confirmation modal -->
+@if (cancelTarget()) {
+  <div id="myBookings__div__cancelOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+       (click)="closeCancel()">
+    <div id="myBookings__div__cancelModal" class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" (click)="$event.stopPropagation()">
+      <h3 id="myBookings__h3__cancelTitle" class="text-lg font-bold text-slate-900">Cancel this booking?</h3>
+      <p id="myBookings__p__cancelSubtitle" class="text-sm text-slate-500 mt-1">
+        {{ cancelTarget()!.show.movie.title }} — {{ cancelTarget()!.show.showTime | date:'EEE, MMM d · h:mm a' }}
+      </p>
+
+      @if (cancelEstimate()) {
+        <div id="myBookings__div__cancelEstimate" class="mt-5 rounded-lg bg-slate-50 border border-slate-200 p-4 space-y-2">
+          <div id="myBookings__div__cancelPaid" class="flex justify-between text-sm">
+            <span id="myBookings__span__cancelPaidLabel" class="text-slate-600">Amount paid</span>
+            <span id="myBookings__span__cancelPaidValue" class="font-semibold text-slate-900">{{ cancelTarget()!.totalAmount | currency:'INR' }}</span>
+          </div>
+          <div id="myBookings__div__cancelFee" class="flex justify-between text-sm">
+            <span id="myBookings__span__cancelFeeLabel" class="text-slate-600">Cancellation fee ({{ (cancelEstimate()!.feeRate * 100) | number:'1.0-0' }}%)</span>
+            <span id="myBookings__span__cancelFeeValue" class="font-semibold text-rose-600">−{{ cancelEstimate()!.fee | currency:'INR' }}</span>
+          </div>
+          <div id="myBookings__div__cancelRefund" class="border-t border-slate-200 pt-2 flex justify-between text-sm">
+            <span id="myBookings__span__cancelRefundLabel" class="font-semibold text-slate-900">Refund you'll receive</span>
+            <span id="myBookings__span__cancelRefundValue" class="font-bold text-emerald-700">{{ cancelEstimate()!.refund | currency:'INR' }}</span>
+          </div>
+          <p id="myBookings__p__cancelReason" class="text-xs text-slate-500 pt-1">{{ cancelEstimate()!.reason }}</p>
+        </div>
+      }
+
+      @if (cancelError()) {
+        <div id="myBookings__div__cancelError" class="mt-3 text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-md p-2">
+          {{ cancelError() }}
+        </div>
+      }
+
+      <div id="myBookings__div__cancelActions" class="mt-6 flex justify-end gap-3">
+        <button type="button" id="myBookings__button__cancelKeep" name="myBookings__button__cancelKeep" class="btn-secondary" (click)="closeCancel()" [disabled]="cancelling()">Keep booking</button>
+        <button type="button" id="myBookings__button__cancelConfirm" name="myBookings__button__cancelConfirm"
+                class="inline-flex items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition disabled:opacity-50"
+                [disabled]="cancelling() || !cancelEstimate()!.allowed"
+                (click)="confirmCancel()">
+          {{ cancelling() ? 'Cancelling…' : 'Yes, cancel & refund' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Review (star picker) modal -->
+@if (reviewTarget()) {
+  <div id="myBookings__div__reviewOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+       (click)="closeReview()">
+    <div id="myBookings__div__reviewModal" class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" (click)="$event.stopPropagation()">
+      <div id="myBookings__div__reviewHead" class="flex items-start gap-3">
+        <span id="myBookings__span__reviewHeadEmoji" class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-rose-100 text-xl shrink-0">🍅</span>
+        <div id="myBookings__div__reviewHeadText">
+          <h3 id="myBookings__h3__reviewTitle" class="text-lg font-bold text-slate-900">Rate "{{ reviewTarget()!.show.movie.title }}"</h3>
+          <p id="myBookings__p__reviewSubtitle" class="text-sm text-slate-500 mt-0.5">
+            {{ reviewTarget()!.show.showTime | date:'EEE, MMM d · h:mm a' }} · How was it?
+          </p>
+        </div>
+      </div>
+
+      <div id="myBookings__div__reviewStars" class="mt-6 flex items-center justify-center gap-2"
+           (mouseleave)="leaveStars()">
+        @for (n of [1,2,3,4,5]; track n) {
+          <button type="button" [id]="'myBookings__button__reviewStar_' + n" [name]="'myBookings__button__reviewStar_' + n" (click)="setStar(n)" (mouseenter)="hoverStar(n)"
+                  class="text-4xl transition transform hover:scale-110"
+                  [class.grayscale-0]="n <= (reviewHover() || reviewRating())"
+                  [class.grayscale]="n > (reviewHover() || reviewRating())"
+                  [class.opacity-100]="n <= (reviewHover() || reviewRating())"
+                  [class.opacity-40]="n > (reviewHover() || reviewRating())"
+                  [attr.aria-label]="'Rate ' + n + ' tomato'">
+            🍅
+          </button>
+        }
+      </div>
+      <div id="myBookings__div__reviewHint" class="mt-2 text-center text-xs text-slate-500">
+        @if (reviewRating() > 0) {
+          You picked {{ reviewRating() }} / 5
+        } @else {
+          Tap a tomato to rate
+        }
+      </div>
+
+      @if (reviewError()) {
+        <div id="myBookings__div__reviewError" class="mt-3 text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-md p-2">
+          {{ reviewError() }}
+        </div>
+      }
+
+      <div id="myBookings__div__reviewActions" class="mt-6 flex justify-end gap-3">
+        <button type="button" id="myBookings__button__reviewCancel" name="myBookings__button__reviewCancel" class="btn-secondary" (click)="closeReview()" [disabled]="reviewSaving()">Cancel</button>
+        <button type="button" id="myBookings__button__reviewSubmit" name="myBookings__button__reviewSubmit" class="btn-primary"
+                [disabled]="reviewSaving() || reviewRating() < 1"
+                (click)="submitReview()">
+          {{ reviewSaving() ? 'Submitting…' : 'Submit rating' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Ticket modal: production-style cinema ticket with QR -->
+@if (ticketTarget()) {
+  <div id="myBookings__div__ticketOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
+       (click)="closeTicket()">
+    <div id="myBookings__div__ticketWrap" class="relative max-w-2xl w-full" (click)="$event.stopPropagation()">
+
+      <!-- Close button -->
+      <button type="button" id="myBookings__button__ticketClose" name="myBookings__button__ticketClose" (click)="closeTicket()"
+              class="absolute -top-3 -right-3 z-10 h-10 w-10 rounded-full bg-white text-slate-700 shadow-lg hover:bg-slate-100 hover:rotate-90 flex items-center justify-center transition"
+              aria-label="Close ticket">
+        <app-icon id="myBookings__icon__ticketClose" name="x" [size]="20"></app-icon>
+      </button>
+
+      <!-- Ticket body -->
+      <div id="myBookings__div__ticketBody" class="relative bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+
+        <!-- Main section -->
+        <div id="myBookings__div__ticketMain" class="grow relative">
+          <!-- Header bar -->
+          <div id="myBookings__div__ticketHeaderBar" class="bg-gradient-to-r from-indigo-900 via-indigo-700 to-purple-700 px-6 py-4 flex items-center justify-between text-white">
+            <div id="myBookings__div__ticketBrand" class="flex items-center gap-2">
+              <span id="myBookings__span__ticketBrandIcon" class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white/15 backdrop-blur font-bold">C</span>
+              <span id="myBookings__span__ticketBrandText" class="font-bold tracking-tight">CINEBOOK</span>
+            </div>
+            <span id="myBookings__span__ticketAdmitBadge" class="text-[10px] font-bold uppercase tracking-[0.3em] bg-amber-400 text-amber-900 px-2 py-0.5 rounded">Admit one</span>
+          </div>
+
+          <!-- Body -->
+          <div id="myBookings__div__ticketBodyInner" class="px-6 py-6 flex gap-5">
+            @if (ticketTarget()!.show.movie.posterUrl) {
+              <img id="myBookings__img__ticketPoster" [src]="ticketTarget()!.show.movie.posterUrl" alt=""
+                   class="hidden sm:block w-20 h-28 rounded-md object-cover ring-1 ring-slate-200 shadow-sm shrink-0" />
+            }
+            <div id="myBookings__div__ticketMovieInfo" class="grow min-w-0">
+              <div id="myBookings__div__ticketNowShowingLabel" class="text-[10px] uppercase tracking-widest text-slate-400">Now showing</div>
+              <h3 id="myBookings__h3__ticketMovieTitle" class="text-2xl font-bold text-slate-900 leading-tight">{{ ticketTarget()!.show.movie.title }}</h3>
+              <div id="myBookings__div__ticketMovieMeta" class="text-xs text-slate-500 mt-1">{{ ticketTarget()!.show.movie.genre }} · {{ ticketTarget()!.show.movie.durationMins }} min</div>
+            </div>
+          </div>
+
+          <!-- Show details grid -->
+          <div id="myBookings__div__ticketDetailsGrid" class="px-6 pb-6 grid grid-cols-2 gap-x-4 gap-y-4 text-sm border-t border-dashed border-slate-200 pt-5">
+            <div id="myBookings__div__ticketDateWrap">
+              <div id="myBookings__div__ticketDateLabel" class="text-[10px] uppercase tracking-widest text-slate-400">Date</div>
+              <div id="myBookings__div__ticketDateValue" class="font-semibold text-slate-900 mt-0.5">{{ ticketTarget()!.show.showTime | date:'EEE, MMM d, y' }}</div>
+            </div>
+            <div id="myBookings__div__ticketTimeWrap">
+              <div id="myBookings__div__ticketTimeLabel" class="text-[10px] uppercase tracking-widest text-slate-400">Time</div>
+              <div id="myBookings__div__ticketTimeValue" class="font-semibold text-slate-900 mt-0.5">{{ ticketTarget()!.show.showTime | date:'h:mm a' }}</div>
+            </div>
+            <div id="myBookings__div__ticketTheaterWrap">
+              <div id="myBookings__div__ticketTheaterLabel" class="text-[10px] uppercase tracking-widest text-slate-400">Theater</div>
+              <div id="myBookings__div__ticketTheaterValue" class="font-semibold text-slate-900 mt-0.5">
+                {{ ticketTarget()!.show.theater?.name || 'CineBook Cinemas' }}
+              </div>
+              @if (ticketTarget()!.show.theater?.location) {
+                <div id="myBookings__div__ticketTheaterLocation" class="text-[11px] text-slate-500 mt-0.5">{{ ticketTarget()!.show.theater?.location }}</div>
+              }
+            </div>
+            <div id="myBookings__div__ticketTotalWrap">
+              <div id="myBookings__div__ticketTotalLabel" class="text-[10px] uppercase tracking-widest text-slate-400">Total paid</div>
+              <div id="myBookings__div__ticketTotalValue" class="font-semibold text-slate-900 mt-0.5">{{ ticketTarget()!.totalAmount | currency:'INR' }}</div>
+            </div>
+            <div id="myBookings__div__ticketScreenWrap">
+              <div id="myBookings__div__ticketScreenLabel" class="text-[10px] uppercase tracking-widest text-slate-400">Screen</div>
+              <div id="myBookings__div__ticketScreenValue" class="font-semibold text-slate-900 mt-0.5">Auditorium {{ auditorium(ticketTarget()!.show.id) }}</div>
+            </div>
+          </div>
+
+          <!-- Seats -->
+          <div id="myBookings__div__ticketSeatsSection" class="px-6 pb-6 border-t border-dashed border-slate-200 pt-5">
+            <div id="myBookings__div__ticketSeatsLabel" class="text-[10px] uppercase tracking-widest text-slate-400 mb-2">
+              {{ ticketTarget()!.seatsBooked }} {{ ticketTarget()!.seatsBooked === 1 ? 'seat' : 'seats' }}
+            </div>
+            <div id="myBookings__div__ticketSeatsList" class="flex flex-wrap gap-2">
+              @for (s of ticketSeats(); track s) {
+                <span [id]="'myBookings__span__ticketSeat_' + s" class="inline-flex items-center justify-center min-w-[3rem] rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 text-sm font-bold font-mono">
+                  {{ s }}
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Perforated tear line -->
+        <div id="myBookings__div__ticketTearDesktop" class="relative hidden md:block w-px">
+          <span id="myBookings__span__ticketTearDesktopTop" class="absolute -left-3 -top-3 h-6 w-6 rounded-full bg-slate-900/80 shadow-inner"></span>
+          <span id="myBookings__span__ticketTearDesktopBottom" class="absolute -left-3 -bottom-3 h-6 w-6 rounded-full bg-slate-900/80 shadow-inner"></span>
+          <div id="myBookings__div__ticketTearDesktopDashed" class="absolute inset-y-6 left-0 border-l-2 border-dashed border-slate-300"></div>
+        </div>
+        <!-- Mobile tear line -->
+        <div id="myBookings__div__ticketTearMobile" class="relative md:hidden h-px">
+          <span id="myBookings__span__ticketTearMobileLeft" class="absolute -left-3 -top-3 h-6 w-6 rounded-full bg-slate-900/80"></span>
+          <span id="myBookings__span__ticketTearMobileRight" class="absolute -right-3 -top-3 h-6 w-6 rounded-full bg-slate-900/80"></span>
+          <div id="myBookings__div__ticketTearMobileDashed" class="absolute inset-x-6 top-0 border-t-2 border-dashed border-slate-300"></div>
+        </div>
+
+        <!-- Stub with QR -->
+        <div id="myBookings__div__ticketStub" class="md:w-64 bg-slate-50 px-6 py-6 flex flex-col items-center justify-center gap-3 text-center">
+          <div id="myBookings__div__ticketStubLabel" class="text-[10px] uppercase tracking-widest text-slate-400">Scan at entry</div>
+          <div id="myBookings__div__ticketStubQrWrap" class="bg-white p-3 rounded-lg ring-1 ring-slate-200 shadow-sm">
+            <img id="myBookings__img__ticketQr" [src]="qrUrl()" [alt]="'QR code for ' + ref(ticketTarget()!.id)"
+                 class="block w-40 h-40" loading="lazy" />
+          </div>
+          <div id="myBookings__div__ticketStubRefWrap">
+            <div id="myBookings__div__ticketStubRefLabel" class="text-[10px] uppercase tracking-widest text-slate-400">Booking Ref</div>
+            <div id="myBookings__div__ticketStubRefValue" class="font-mono text-base font-bold text-slate-900">{{ ref(ticketTarget()!.id) }}</div>
+          </div>
+          <div id="myBookings__div__ticketStubNote" class="text-[10px] text-slate-500 pt-2 border-t border-slate-200 w-full">
+            Present this ticket at the entrance. Doors open 15 minutes before showtime.
+          </div>
+        </div>
+      </div>
+
+      <!-- Action row -->
+      <div id="myBookings__div__ticketActions" class="mt-4 flex items-center justify-end gap-3">
+        <button type="button" id="myBookings__button__ticketPrint" name="myBookings__button__ticketPrint" (click)="printTicket()"
+                class="group/btn inline-flex items-center gap-2 rounded-lg bg-white/90 hover:bg-white text-slate-900 px-4 py-2 text-sm font-semibold shadow transition">
+          <app-icon id="myBookings__icon__ticketPrint" name="printer" [size]="16" class="group-hover/btn:translate-y-px transition"></app-icon>
+          Print
+        </button>
+        <button type="button" id="myBookings__button__ticketDone" name="myBookings__button__ticketDone" (click)="closeTicket()"
+                class="inline-flex items-center gap-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 text-sm font-semibold shadow transition">
+          <app-icon id="myBookings__icon__ticketDone" name="check" [size]="16"></app-icon>
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+}

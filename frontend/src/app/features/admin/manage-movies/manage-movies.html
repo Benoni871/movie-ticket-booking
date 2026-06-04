@@ -1,0 +1,388 @@
+<div id="manageMovies__div__header" class="flex items-end justify-between mb-6">
+  <div id="manageMovies__div__headerText">
+    <h2 id="manageMovies__h2__title" class="text-2xl font-bold text-slate-900">Manage Movies</h2>
+    <p id="manageMovies__p__subtitle" class="text-sm text-slate-500 mt-1">Add new titles and review the catalog.</p>
+  </div>
+  <div id="manageMovies__div__countWrap" class="text-sm text-slate-500">
+    <span id="manageMovies__span__count" class="font-semibold text-slate-900">{{ movies().length }}</span> movies
+  </div>
+</div>
+
+@if (movies().length > 0) {
+  <div id="manageMovies__div__carouselWrap" class="mb-8">
+    <app-poster-carousel id="manageMovies__posterCarousel__catalog" [movies]="movies()" kicker="In the catalog" [enableBookingCta]="false" size="sm"></app-poster-carousel>
+  </div>
+}
+
+<!-- Add Movie -->
+<div id="manageMovies__div__addGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+  <div id="manageMovies__div__addFormCard" class="lg:col-span-2 card p-6">
+    <div id="manageMovies__div__addFormHead" class="flex items-center gap-3 mb-5">
+      <span id="manageMovies__span__addFormIconWrap" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+        <app-icon id="manageMovies__icon__addForm" name="plus" [size]="18"></app-icon>
+      </span>
+      <div id="manageMovies__div__addFormHeadText">
+        <h3 id="manageMovies__h3__addFormTitle" class="font-semibold text-slate-900">Add a Movie</h3>
+        <p id="manageMovies__p__addFormSubtitle" class="text-xs text-slate-500">Once added, it will appear in the user catalog instantly.</p>
+      </div>
+    </div>
+
+    <form id="manageMovies__form__add" name="manageMovies__form__add" (ngSubmit)="add()" #f="ngForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div id="manageMovies__div__addTitleWrap" class="md:col-span-2">
+        <label id="manageMovies__label__addTitle" class="label">Title <span id="manageMovies__span__addTitleRequired" class="text-rose-500">*</span></label>
+        <input class="input" id="manageMovies__input__addTitle" name="title" [(ngModel)]="form.title" required placeholder="e.g. Tenet" />
+      </div>
+      <div id="manageMovies__div__addGenreWrap">
+        <label id="manageMovies__label__addGenre" class="label">Genre</label>
+        <input class="input" id="manageMovies__input__addGenre" name="genre" [(ngModel)]="form.genre" placeholder="e.g. Sci-Fi" />
+      </div>
+      <div id="manageMovies__div__addDurationWrap">
+        <label id="manageMovies__label__addDuration" class="label">Duration (mins)</label>
+        <input class="input" id="manageMovies__input__addDuration" name="durationMins" type="number" min="1" [(ngModel)]="form.durationMins" placeholder="148" />
+      </div>
+      <div id="manageMovies__div__addPriceWrap">
+        <label id="manageMovies__label__addPrice" class="label">Default Ticket Price (₹)</label>
+        <div id="manageMovies__div__addPriceInputWrap" class="relative">
+          <span id="manageMovies__span__addPricePrefix" class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none text-sm">₹</span>
+          <input class="input pl-7" id="manageMovies__input__addPrice" name="price" type="number" step="0.01" min="0"
+                 [(ngModel)]="form.price" placeholder="250.00" />
+        </div>
+        <p id="manageMovies__p__addPriceHint" class="text-xs text-slate-400 mt-1">Suggested price; can be overridden per show.</p>
+      </div>
+      <div id="manageMovies__div__addPosterWrap">
+        <label id="manageMovies__label__addPoster" class="label">Poster URL</label>
+        <input class="input" id="manageMovies__input__addPoster" name="posterUrl" [(ngModel)]="form.posterUrl" placeholder="https://image.tmdb.org/…" />
+        <p id="manageMovies__p__addPosterHint" class="text-xs text-slate-400 mt-1">Portrait image (2:3) looks best.</p>
+      </div>
+      <div id="manageMovies__div__addTrailerWrap" class="md:col-span-2">
+        <label id="manageMovies__label__addTrailer" class="label">YouTube Trailer URL</label>
+        <input class="input" id="manageMovies__input__addTrailer" name="trailerUrl" [(ngModel)]="form.trailerUrl"
+               placeholder="https://www.youtube.com/watch?v=…" />
+        <p id="manageMovies__p__addTrailerHint" class="text-xs text-slate-400 mt-1">
+          Paste any YouTube URL (watch, youtu.be, shorts, or embed).
+          @if (form.trailerUrl && !embedPreview(form.trailerUrl)) {
+            <span id="manageMovies__span__addTrailerInvalid" class="text-rose-500">· URL doesn't look like a valid YouTube link</span>
+          }
+        </p>
+      </div>
+      <div id="manageMovies__div__addLanguagesWrap" class="md:col-span-2">
+        <label id="manageMovies__label__addLanguages" class="label">Available languages</label>
+        <div id="manageMovies__div__addLanguageChips" class="flex flex-wrap gap-2 mb-2">
+          @for (lang of suggestedLanguages; track lang) {
+            <button type="button" [id]="'manageMovies__button__addLanguageChip_' + lang" [name]="'manageMovies__button__addLanguageChip_' + lang"
+                    (click)="toggleAddLanguage(lang)"
+                    [ngClass]="hasLanguage(form.languages, lang)
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'"
+                    class="text-xs font-semibold rounded-full border px-3 py-1 transition">
+              {{ lang }}
+            </button>
+          }
+        </div>
+        <input class="input" id="manageMovies__input__addLanguages" name="languages" [(ngModel)]="form.languages"
+               placeholder="Comma-separated, e.g. Telugu, Hindi, English" />
+        <p id="manageMovies__p__addLanguagesHint" class="text-xs text-slate-400 mt-1">Tap a chip above or type your own list — separated by commas.</p>
+      </div>
+
+      <div id="manageMovies__div__addActions" class="md:col-span-2 flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+        @if (msg()) {
+          <span id="manageMovies__span__addMsg" class="text-sm text-emerald-600 inline-flex items-center gap-1.5">
+            <app-icon id="manageMovies__icon__addMsg" name="check-circle-2" [size]="14"></app-icon>
+            {{ msg() }}
+          </span>
+        }
+        @if (err()) {
+          <span id="manageMovies__span__addErr" class="text-sm text-rose-600 inline-flex items-center gap-1.5">
+            <app-icon id="manageMovies__icon__addErr" name="alert-circle" [size]="14"></app-icon>
+            {{ err() }}
+          </span>
+        }
+        <button type="button" id="manageMovies__button__addReset" name="manageMovies__button__addReset" class="btn-secondary" (click)="reset()" [disabled]="saving()">Reset</button>
+        <button type="submit" id="manageMovies__button__addSubmit" name="manageMovies__button__addSubmit" class="btn-primary group inline-flex items-center gap-1.5" [disabled]="saving() || !f.valid">
+          <app-icon id="manageMovies__icon__addSubmit" name="plus" [size]="14" class="group-hover:rotate-90 transition"></app-icon>
+          {{ saving() ? 'Adding…' : 'Add Movie' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Live preview -->
+  <div id="manageMovies__div__previewCard" class="card p-5">
+    <div id="manageMovies__div__previewLabel" class="text-xs uppercase tracking-widest text-slate-400 mb-3">Live preview</div>
+    <div id="manageMovies__div__previewPosterWrap" class="aspect-[2/3] bg-slate-100 rounded-lg overflow-hidden ring-1 ring-slate-200">
+      @if (form.posterUrl) {
+        <img id="manageMovies__img__previewPoster" [src]="form.posterUrl" alt="preview" class="w-full h-full object-cover" (error)="onImgError($event)" />
+      } @else {
+        <div id="manageMovies__div__previewNoPoster" class="w-full h-full flex items-center justify-center text-slate-300 text-sm">No poster yet</div>
+      }
+    </div>
+    <div id="manageMovies__div__previewBody" class="mt-3">
+      <div id="manageMovies__div__previewTitle" class="font-semibold text-slate-900 line-clamp-1">{{ form.title || 'Untitled movie' }}</div>
+      <div id="manageMovies__div__previewMeta" class="text-xs text-slate-500 mt-0.5">
+        {{ form.genre || '—' }} · {{ form.durationMins || 0 }} min
+      </div>
+      @if (form.price) {
+        <div id="manageMovies__div__previewPrice" class="text-sm font-semibold text-indigo-600 mt-1">{{ form.price | currency:'INR' }}</div>
+      }
+      @if (embedPreview(form.trailerUrl)) {
+        <div id="manageMovies__div__previewTrailerBadge" class="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-rose-600 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded">
+          <app-icon id="manageMovies__icon__previewTrailer" name="play-circle" [size]="11"></app-icon>
+          Trailer attached
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Movies table -->
+<div id="manageMovies__div__tableCard" class="card overflow-hidden">
+  <div id="manageMovies__div__tableHead" class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+    <h3 id="manageMovies__h3__tableTitle" class="font-semibold text-slate-900">Existing Movies</h3>
+    <span id="manageMovies__span__tableCount" class="text-xs text-slate-500">{{ movies().length }} total</span>
+  </div>
+  <div id="manageMovies__div__tableScroll" class="overflow-x-auto">
+    <table id="manageMovies__table__movies" class="min-w-full divide-y divide-slate-200 text-sm">
+      <thead id="manageMovies__thead__movies" class="bg-slate-50">
+        <tr id="manageMovies__tr__moviesHead" class="text-left text-xs font-semibold text-slate-600 uppercase">
+          <th id="manageMovies__th__id" class="px-6 py-3">ID</th>
+          <th id="manageMovies__th__poster" class="px-6 py-3">Poster</th>
+          <th id="manageMovies__th__titleCol" class="px-6 py-3">Title</th>
+          <th id="manageMovies__th__genre" class="px-6 py-3">Genre</th>
+          <th id="manageMovies__th__duration" class="px-6 py-3">Duration</th>
+          <th id="manageMovies__th__price" class="px-6 py-3 text-right">Price</th>
+          <th id="manageMovies__th__actions" class="px-6 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="manageMovies__tbody__movies" class="divide-y divide-slate-100">
+        @for (m of movies(); track m.id) {
+          <tr [id]="'manageMovies__tr__movie_' + m.id" class="even:bg-slate-50/50 hover:bg-indigo-50/40 transition">
+            <td [id]="'manageMovies__td__id_' + m.id" class="px-6 py-3 text-slate-500">{{ m.id }}</td>
+            <td [id]="'manageMovies__td__poster_' + m.id" class="px-6 py-3">
+              @if (m.posterUrl) {
+                <img [id]="'manageMovies__img__poster_' + m.id" [src]="m.posterUrl" class="h-14 w-10 object-cover rounded ring-1 ring-slate-200" alt="" />
+              }
+            </td>
+            <td [id]="'manageMovies__td__title_' + m.id" class="px-6 py-3 font-medium text-slate-900">{{ m.title }}</td>
+            <td [id]="'manageMovies__td__genre_' + m.id" class="px-6 py-3">
+              @if (m.genre) {
+                <span [id]="'manageMovies__span__genreBadge_' + m.id" class="inline-flex items-center rounded-full bg-indigo-50 text-indigo-700 px-2 py-0.5 text-xs font-medium">
+                  {{ m.genre }}
+                </span>
+              }
+            </td>
+            <td [id]="'manageMovies__td__duration_' + m.id" class="px-6 py-3 text-slate-600">{{ m.durationMins }} min</td>
+            <td [id]="'manageMovies__td__price_' + m.id" class="px-6 py-3 text-right font-semibold">
+              @if (m.price != null) {
+                <span [id]="'manageMovies__span__priceValue_' + m.id" class="text-slate-900">{{ m.price | currency:'INR' }}</span>
+              } @else {
+                <span [id]="'manageMovies__span__priceEmpty_' + m.id" class="text-slate-400">—</span>
+              }
+            </td>
+            <td [id]="'manageMovies__td__actions_' + m.id" class="px-6 py-3 text-right whitespace-nowrap">
+              <button type="button" [id]="'manageMovies__button__edit_' + m.id" [name]="'manageMovies__button__edit_' + m.id"
+                      class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border border-indigo-200 rounded-md px-3 py-1.5 transition mr-2"
+                      (click)="openEdit(m)">
+                <app-icon [id]="'manageMovies__icon__edit_' + m.id" name="edit" [size]="13"></app-icon>
+                Edit
+              </button>
+              <button type="button" [id]="'manageMovies__button__delete_' + m.id" [name]="'manageMovies__button__delete_' + m.id"
+                      class="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-md px-3 py-1.5 transition"
+                      (click)="openDelete(m)">
+                <app-icon [id]="'manageMovies__icon__delete_' + m.id" name="trash-2" [size]="13"></app-icon>
+                Delete
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr id="manageMovies__tr__empty"><td id="manageMovies__td__empty" colspan="7" class="px-6 py-10 text-center text-slate-400">No movies yet.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Edit movie modal -->
+@if (editTarget()) {
+  <div id="manageMovies__div__editOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+       (click)="closeEdit()">
+    <div id="manageMovies__div__editModal" class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6" (click)="$event.stopPropagation()">
+      <div id="manageMovies__div__editHead" class="flex items-start gap-3">
+        <span id="manageMovies__span__editHeadIconWrap" class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 shrink-0">
+          <app-icon id="manageMovies__icon__editHead" name="edit" [size]="18"></app-icon>
+        </span>
+        <div id="manageMovies__div__editHeadText">
+          <h3 id="manageMovies__h3__editTitle" class="text-lg font-bold text-slate-900">Edit movie</h3>
+          <p id="manageMovies__p__editSubtitle" class="text-sm text-slate-500 mt-0.5">Update the title, genre, runtime, or replace the poster.</p>
+        </div>
+      </div>
+
+      <div id="manageMovies__div__editGrid" class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-5">
+        <form id="manageMovies__form__edit" name="manageMovies__form__edit" #ef="ngForm" class="md:col-span-2 space-y-4">
+          <div id="manageMovies__div__editTitleWrap">
+            <label id="manageMovies__label__editTitle" class="label">Title <span id="manageMovies__span__editTitleRequired" class="text-rose-500">*</span></label>
+            <input class="input" id="manageMovies__input__editTitle" name="eTitle" [(ngModel)]="editForm.title" required />
+          </div>
+          <div id="manageMovies__div__editGenreDurWrap" class="grid grid-cols-2 gap-3">
+            <div id="manageMovies__div__editGenreWrap">
+              <label id="manageMovies__label__editGenre" class="label">Genre</label>
+              <input class="input" id="manageMovies__input__editGenre" name="eGenre" [(ngModel)]="editForm.genre" />
+            </div>
+            <div id="manageMovies__div__editDurationWrap">
+              <label id="manageMovies__label__editDuration" class="label">Duration (mins)</label>
+              <input class="input" id="manageMovies__input__editDuration" name="eDur" type="number" min="1" [(ngModel)]="editForm.durationMins" />
+            </div>
+          </div>
+          <div id="manageMovies__div__editPriceWrap">
+            <label id="manageMovies__label__editPrice" class="label">Default Ticket Price (₹)</label>
+            <div id="manageMovies__div__editPriceInputWrap" class="relative">
+              <span id="manageMovies__span__editPricePrefix" class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none text-sm">₹</span>
+              <input class="input pl-7" id="manageMovies__input__editPrice" name="ePrice" type="number" step="0.01" min="0"
+                     [(ngModel)]="editForm.price" placeholder="250.00" />
+            </div>
+            <p id="manageMovies__p__editPriceHint" class="text-xs text-slate-400 mt-1">Suggested price; admins can override per show.</p>
+          </div>
+          <div id="manageMovies__div__editPosterWrap">
+            <label id="manageMovies__label__editPoster" class="label">Poster URL</label>
+            <input class="input" id="manageMovies__input__editPoster" name="ePoster" [(ngModel)]="editForm.posterUrl"
+                   placeholder="https://image.tmdb.org/…" />
+            <p id="manageMovies__p__editPosterHint" class="text-xs text-slate-400 mt-1">Paste a new image URL to replace the poster.</p>
+          </div>
+          <div id="manageMovies__div__editTrailerWrap">
+            <label id="manageMovies__label__editTrailer" class="label">YouTube Trailer URL</label>
+            <input class="input" id="manageMovies__input__editTrailer" name="eTrailer" [(ngModel)]="editForm.trailerUrl"
+                   placeholder="https://www.youtube.com/watch?v=…" />
+            <p id="manageMovies__p__editTrailerHint" class="text-xs text-slate-400 mt-1">
+              Watch, youtu.be, shorts, or embed link.
+              @if (editForm.trailerUrl && !embedPreview(editForm.trailerUrl)) {
+                <span id="manageMovies__span__editTrailerInvalid" class="text-rose-500">· URL doesn't look like a valid YouTube link</span>
+              }
+            </p>
+          </div>
+          <div id="manageMovies__div__editLanguagesWrap">
+            <label id="manageMovies__label__editLanguages" class="label">Available languages</label>
+            <div id="manageMovies__div__editLanguageChips" class="flex flex-wrap gap-2 mb-2">
+              @for (lang of suggestedLanguages; track lang) {
+                <button type="button" [id]="'manageMovies__button__editLanguageChip_' + lang" [name]="'manageMovies__button__editLanguageChip_' + lang"
+                        (click)="toggleEditLanguage(lang)"
+                        [ngClass]="hasLanguage(editForm.languages, lang)
+                          ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'"
+                        class="text-xs font-semibold rounded-full border px-3 py-1 transition">
+                  {{ lang }}
+                </button>
+              }
+            </div>
+            <input class="input" id="manageMovies__input__editLanguages" name="eLanguages" [(ngModel)]="editForm.languages"
+                   placeholder="Comma-separated, e.g. Telugu, Hindi, English" />
+          </div>
+        </form>
+
+        <div id="manageMovies__div__editPreview">
+          <div id="manageMovies__div__editPreviewLabel" class="text-xs uppercase tracking-widest text-slate-400 mb-2">Preview</div>
+          <div id="manageMovies__div__editPreviewPosterWrap" class="aspect-[2/3] bg-slate-100 rounded-lg overflow-hidden ring-1 ring-slate-200">
+            @if (editForm.posterUrl) {
+              <img id="manageMovies__img__editPreviewPoster" [src]="editForm.posterUrl" alt="" class="w-full h-full object-cover" (error)="onImgError($event)" />
+            } @else {
+              <div id="manageMovies__div__editPreviewNoPoster" class="w-full h-full flex items-center justify-center text-slate-300 text-xs">No poster</div>
+            }
+          </div>
+          <div id="manageMovies__div__editPreviewBody" class="mt-2 text-xs">
+            <div id="manageMovies__div__editPreviewTitle" class="font-semibold text-slate-900 line-clamp-1">{{ editForm.title || 'Untitled' }}</div>
+            <div id="manageMovies__div__editPreviewMeta" class="text-slate-500">{{ editForm.genre || '—' }} · {{ editForm.durationMins || 0 }} min</div>
+            @if (editForm.price) {
+              <div id="manageMovies__div__editPreviewPrice" class="text-sm font-semibold text-indigo-600 mt-1">{{ editForm.price | currency:'INR' }}</div>
+            }
+          </div>
+        </div>
+      </div>
+
+      @if (editError()) {
+        <div id="manageMovies__div__editError" class="mt-3 text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-md p-2">
+          {{ editError() }}
+        </div>
+      }
+
+      <div id="manageMovies__div__editActions" class="mt-6 flex justify-end gap-3">
+        <button type="button" id="manageMovies__button__editCancel" name="manageMovies__button__editCancel" class="btn-secondary" (click)="closeEdit()" [disabled]="editing()">Cancel</button>
+        <button type="button" id="manageMovies__button__editSave" name="manageMovies__button__editSave" class="btn-primary inline-flex items-center gap-1.5"
+                [disabled]="editing() || !editForm.title || !editForm.title.trim()"
+                (click)="confirmEdit()">
+          <app-icon id="manageMovies__icon__editSave" name="save" [size]="14"></app-icon>
+          {{ editing() ? 'Saving…' : 'Save changes' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Delete confirmation modal -->
+@if (deleteTarget()) {
+  <div id="manageMovies__div__deleteOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+       (click)="closeDelete()">
+    <div id="manageMovies__div__deleteModal" class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" (click)="$event.stopPropagation()">
+      <div id="manageMovies__div__deleteHead" class="flex items-start gap-3">
+        <span id="manageMovies__span__deleteHeadIconWrap" class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 text-rose-600 shrink-0">
+          <app-icon id="manageMovies__icon__deleteHead" name="alert-triangle" [size]="20"></app-icon>
+        </span>
+        <div id="manageMovies__div__deleteHeadText">
+          <h3 id="manageMovies__h3__deleteTitle" class="text-lg font-bold text-slate-900">Delete "{{ deleteTarget()!.movie.title }}"?</h3>
+          <p id="manageMovies__p__deleteSubtitle" class="text-sm text-slate-500 mt-1">
+            This action cannot be undone. Removing a movie also removes its scheduled shows.
+          </p>
+        </div>
+      </div>
+
+      <div id="manageMovies__div__deleteImpact" class="mt-5 rounded-lg bg-slate-50 border border-slate-200 p-4 space-y-2 text-sm">
+        <div id="manageMovies__div__deleteImpactTotal" class="flex justify-between">
+          <span id="manageMovies__span__deleteImpactTotalLabel" class="text-slate-600">Scheduled shows</span>
+          <span id="manageMovies__span__deleteImpactTotalValue" class="font-semibold text-slate-900">{{ deleteTarget()!.totalShows }}</span>
+        </div>
+        <div id="manageMovies__div__deleteImpactUpcoming" class="flex justify-between">
+          <span id="manageMovies__span__deleteImpactUpcomingLabel" class="text-slate-600">Upcoming shows</span>
+          <span id="manageMovies__span__deleteImpactUpcomingValue" class="font-semibold text-slate-900">{{ deleteTarget()!.upcomingShows }}</span>
+        </div>
+        <div id="manageMovies__div__deleteImpactActive" class="flex justify-between">
+          <span id="manageMovies__span__deleteImpactActiveLabel" class="text-slate-600">Active bookings</span>
+          <span id="manageMovies__span__deleteImpactActiveValue" [ngClass]="deleteTarget()!.activeBookings > 0 ? 'text-rose-600' : 'text-slate-900'"
+                class="font-semibold">{{ deleteTarget()!.activeBookings }}</span>
+        </div>
+        <div id="manageMovies__div__deleteImpactCancelled" class="flex justify-between">
+          <span id="manageMovies__span__deleteImpactCancelledLabel" class="text-slate-600">Cancelled bookings (kept for history)</span>
+          <span id="manageMovies__span__deleteImpactCancelledValue" class="font-semibold text-slate-900">{{ deleteTarget()!.cancelledBookings }}</span>
+        </div>
+      </div>
+
+      @if (deleteTarget()!.activeBookings > 0) {
+        <div id="manageMovies__div__deleteBlocked" class="mt-4 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-md p-3 flex items-start gap-2">
+          <app-icon id="manageMovies__icon__deleteBlocked" name="alert-triangle" [size]="16" class="shrink-0 mt-0.5"></app-icon>
+          <span id="manageMovies__span__deleteBlockedText">
+            Can't delete this movie — it has {{ deleteTarget()!.activeBookings }} confirmed booking(s).
+            Users would lose their tickets. Wait until shows pass, or cancel those bookings first.
+          </span>
+        </div>
+      } @else {
+        <p id="manageMovies__p__deleteWarning" class="mt-4 text-xs text-slate-500">
+          Deleting will also remove the {{ deleteTarget()!.totalShows }} scheduled show(s) and
+          {{ deleteTarget()!.cancelledBookings }} cancelled booking record(s).
+        </p>
+      }
+
+      @if (deleteError()) {
+        <div id="manageMovies__div__deleteError" class="mt-3 text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-md p-2">
+          {{ deleteError() }}
+        </div>
+      }
+
+      <div id="manageMovies__div__deleteActions" class="mt-6 flex justify-end gap-3">
+        <button type="button" id="manageMovies__button__deleteCancel" name="manageMovies__button__deleteCancel" class="btn-secondary" (click)="closeDelete()" [disabled]="deleting()">Cancel</button>
+        <button type="button" id="manageMovies__button__deleteConfirm" name="manageMovies__button__deleteConfirm"
+                class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition disabled:opacity-50"
+                [disabled]="deleting() || deleteTarget()!.activeBookings > 0"
+                (click)="confirmDelete()">
+          <app-icon id="manageMovies__icon__deleteConfirm" name="trash-2" [size]="14"></app-icon>
+          {{ deleting() ? 'Deleting…' : 'Yes, delete movie' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
