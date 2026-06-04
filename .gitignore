@@ -18,7 +18,6 @@ replay_pid*
 HELP.md
 .flattened-pom.xml
 backend\src\main\resources\application.properties
-
 # =========================
 # Node / Angular (frontend/)
 # =========================
