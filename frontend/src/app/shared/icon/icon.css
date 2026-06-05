@@ -1,0 +1,2 @@
+:host { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
+svg { transition: transform 150ms ease, color 150ms ease; }
